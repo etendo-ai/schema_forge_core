@@ -389,6 +389,38 @@ describe('AuthorizePage', () => {
       window.location = originalLocation;
     });
 
+    it('ETP-4561: deny does not navigate to a javascript: redirect_uri', async () => {
+      const user = userEvent.setup();
+      mockSearchParams = new URLSearchParams({
+        client_id: 'c',
+        redirect_uri: 'javascript:alert(document.domain)',
+        code_challenge: 'x',
+        response_type: 'code',
+      });
+      const originalLocation = window.location;
+      delete window.location;
+      window.location = { ...originalLocation, href: 'about:initial' };
+
+      renderPage();
+      await user.click(screen.getByTestId('oauth-deny'));
+
+      expect(window.location.href).toBe('about:initial');
+      window.location = originalLocation;
+    });
+
+    it('ETP-4561: refuses a javascript: redirect_url returned by the server', async () => {
+      const user = userEvent.setup();
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ redirect_url: ' JavaScript:alert(1)' }),
+      });
+      renderPage();
+      await user.click(screen.getByTestId('oauth-authorize-submit'));
+      await waitFor(() => {
+        expect(screen.getByText('Invalid redirect URL received')).toBeInTheDocument();
+      });
+    });
+
     it('handles error response where json parsing fails', async () => {
       const user = userEvent.setup();
       globalThis.fetch = vi.fn().mockResolvedValue({
