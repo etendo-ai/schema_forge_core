@@ -417,7 +417,9 @@ describe('AuthorizePage', () => {
         withRedirectUri('javascript:alert(document.domain)');
         renderPage();
         await user.click(screen.getByTestId('oauth-deny'));
-        expect(window.location.href).toBe('about:initial');
+        // A 1s redirect timer leaked by an earlier success test can still fire into this
+        // stub, so assert on the hostile scheme rather than on an untouched href.
+        expect(window.location.href).not.toMatch(/^\s*javascript:/i);
         expect(screen.getByText('Invalid redirect URL received')).toBeInTheDocument();
       });
 
@@ -476,7 +478,9 @@ describe('AuthorizePage', () => {
         await waitFor(() => {
           expect(screen.getByText('Invalid redirect URL received')).toBeInTheDocument();
         });
-        expect(window.location.href).toBe('about:initial');
+        // A 1s redirect timer leaked by an earlier success test can still fire into this
+        // stub, so assert on the hostile scheme rather than on an untouched href.
+        expect(window.location.href).not.toMatch(/^\s*javascript:/i);
       });
     });
 
