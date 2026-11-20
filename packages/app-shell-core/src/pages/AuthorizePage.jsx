@@ -17,6 +17,9 @@ function detectMcpUrl() {
   return mcpUrlFor(window.location.origin);
 }
 
+// http: stays allowed only because OAuth native/loopback clients redirect to
+// http://127.0.0.1:<port>/cb (RFC 8252); custom schemes cover MCP client deep links.
+// javascript:/data:/etc. are always rejected by parseSafeUrl.
 const REDIRECT_POLICY = { allowedProtocols: ['https:', 'http:'], allowCustomSchemes: true };
 
 const SCOPE_LABELS = {
@@ -103,10 +106,19 @@ export default function AuthorizePage() {
   }
 
   function handleDeny() {
-    if (safeRedirectUri) {
-      const sep = safeRedirectUri.includes('?') ? '&' : '?';
-      window.location.href = `${safeRedirectUri}${sep}error=access_denied&error_description=User+denied+the+request${state ? `&state=${state}` : ''}`;
+    if (!redirectUri) return;
+    if (!safeRedirectUri) {
+      setStatus('error');
+      setErrorMessage('Invalid redirect URL received');
+      return;
     }
+    // Build with URLSearchParams so a hostile `state` (`x&error=foo`, `x#y`) cannot
+    // inject or truncate parameters, and so a `#fragment` in the URI stays last.
+    const url = new URL(safeRedirectUri);
+    url.searchParams.set('error', 'access_denied');
+    url.searchParams.set('error_description', 'User denied the request');
+    if (state) url.searchParams.set('state', state);
+    window.location.href = url.href;
   }
 
   // No OAuth params — show the connections landing page

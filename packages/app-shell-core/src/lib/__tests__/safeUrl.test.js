@@ -14,6 +14,8 @@ describe('parseSafeUrl — rejected', () => {
     'data:text/html,<script>alert(1)</script>',
     'DATA:text/html;base64,PHNjcmlwdD4=',
     'vbscript:msgbox(1)',
+    'about:blank',
+    'filesystem:https://example.com/temporary/x',
     'file:///etc/passwd',
     'blob:https://a.example/uuid',
     'https://user:pw@example.com/',
@@ -40,7 +42,7 @@ describe('parseSafeUrl — rejected', () => {
   it('rejects relative paths unless allowed', () => assert.equal(parseSafeUrl('/a/b'), null));
   it('rejects http when only https is allowed', () => assert.equal(parseSafeUrl('http://example.com'), null));
   it('still rejects dangerous schemes with allowCustomSchemes', () => {
-    for (const u of ['javascript:alert(1)', 'data:text/html,x', 'file:///x', 'vbscript:x']) {
+    for (const u of ['about:blank', 'filesystem:https://a.example/t/x', 'javascript:alert(1)', 'data:text/html,x', 'file:///x', 'vbscript:x']) {
       assert.equal(parseSafeUrl(u, { allowCustomSchemes: true }), null);
     }
   });

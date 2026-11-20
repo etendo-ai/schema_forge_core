@@ -66,6 +66,13 @@ export function parseSafeUrl(input, options = {}) {
   return url.href;
 }
 
+/**
+ * Boolean form of {@link parseSafeUrl}.
+ *
+ * @param {unknown} input the untrusted URL.
+ * @param {object} [options] same policy options as `parseSafeUrl`.
+ * @returns {boolean} true when the policy accepts the URL.
+ */
 export function isSafeUrl(input, options) {
   return parseSafeUrl(input, options) !== null;
 }
