@@ -2,8 +2,9 @@
  * ETP-4561 — characterization: record values (untrusted API/DB text) rendered by the
  * shared contract-ui option list and by plain JSX text/attributes appear as TEXT.
  * React's default escaping is the defense; no code change. Regression coverage only.
- * The grid cell / form field / record title components live in schema_forge (see
- * its output-escaping tests); this covers the core-owned renderers.
+ * The grid cell / form field / record title components live in schema_forge
+ * (`tools/app-shell/.../contract-ui/__tests__/output-escaping.vitest.jsx`); this covers the
+ * core-owned renderers.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';

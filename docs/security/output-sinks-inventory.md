@@ -3,13 +3,13 @@
 Covers `schema_forge_core`, `schema_forge` and `modules/com.etendoerp.go`. Result legend:
 **Vulnerable (fixed)**, **Safe** (characterized, test kept as regression), **Safe by inspection** (no test, reason given), **Unverified** (follow-up).
 
-Follow-up tickets are opened under epic ETP-3504 by the delivery owner; keys are filled in when they are created: `FU-PDF`, `FU-EMAIL`, `FU-CLASSIC`, `FU-INSPECT` (below).
+Follow-up tickets are opened under epic ETP-3504 by the delivery owner. **Before merge, the PR author must replace these placeholders with the real ETP keys (and say so in the PR description):** `FU-PDF`, `FU-EMAIL`, `FU-CLASSIC`, `FU-INSPECT` (below).
 
 ## schema_forge_core
 
 | # | Source | Untrusted origin | Sink | Context | Defense | Test | Result |
 |---|--------|------------------|------|---------|---------|------|--------|
-| 1 | app-shell-core React views (e.g. `DistinctValuesList`) | API/DB record text | JSX text / attributes | HTML text, attribute | React default escaping | `components/contract-ui/__tests__/outputEscaping.test.jsx` | Safe; no `dangerouslySetInnerHTML`, `innerHTML`, `document.write` in this repo |
+| 1 | app-shell-core React views (e.g. `DistinctValuesList`) | API/DB record text | JSX text / attributes | HTML text, attribute | React default escaping | `components/contract-ui/__tests__/outputEscaping.vitest.jsx`; grid cell, form field and record title in schema_forge: `contract-ui/__tests__/output-escaping.vitest.jsx` | Safe; no `dangerouslySetInnerHTML`, `innerHTML`, `document.write` in this repo |
 | 2 | `pages/AuthorizePage.jsx` Deny | `redirect_uri` query param | `location.href` | URL | `parseSafeUrl` + URLSearchParams for `error`/`state` | `AuthorizePage.vitest.jsx` (ETP-4561 block) | **Vulnerable (fixed)**: `javascript:` ran on Deny; unsafe URI now shows "Invalid redirect URL received" |
 | 3 | `pages/AuthorizePage.jsx` Authorize | `redirect_url` API response | `location.href` | URL | `parseSafeUrl` | same | Defense in depth (fixed) |
 | 4 | `AuthorizePage` InstallButton | literals from `lib/mcpClients.js` | `location.href` | URL | trusted constants | mcpClients tests | Safe |
@@ -24,7 +24,7 @@ Follow-up tickets are opened under epic ETP-3504 by the delivery owner; keys are
 | # | Source | Untrusted origin | Sink | Context | Defense | Test | Result |
 |---|--------|------------------|------|---------|---------|------|--------|
 | 10 | `contract-ui/ReportDrawer.jsx` local fallback preview | record values, filter values, column labels, title | `iframe.document.write` and print `window.open` + `document.write` | HTML text (same-origin document) | **was none** → `escapeHtml` (`lib/escapeHtml.js`) | `ReportDrawer.escaping.vitest.jsx` (fails on the old code), `lib/__tests__/escapeHtml.test.js` | **Vulnerable (fixed)**: a record value like `<img onerror>` executed in the app origin when jsreport was down. The jsreport path renders through Handlebars `{{ }}` (see 7) |
-| 11 | `support/helpDocs.js` `stripHtml` | help-docs search index text | `div.innerHTML` on a detached node | HTML parse | **was** `innerHTML` (loads `<img>`, fires `onerror`) → inert `DOMParser` | `helpDocs.vitest.js` (hostile doc text) | Hardened (source is the Etendo help site, i.e. semi-trusted) |
+| 11 | `support/helpDocs.js` `stripHtml` | help-docs search index text | `div.innerHTML` on a detached node | HTML parse | **was** `innerHTML` (loads `<img>`, fires `onerror`) → inert `DOMParser` | `helpDocs.vitest.js` (fails on the old code: asserts no `innerHTML` assignment) | Hardened (source is the Etendo help site, i.e. semi-trusted) |
 | 12 | `reports/reportDocumentUrl.js` → `DynamicDrillPanel` `window.open` | `docWindow`, `recordId`, query key/value from report SQL | `window.open(url)` | URL | fixed `location.origin` prefix, query encoded | `reports/dynamic/__tests__/drillDown.vitest.js` | Safe: scheme/host cannot change (path only) |
 | 13 | `contract-ui/DocumentPrintDrawer.jsx` `window.open` | `clientUrlRef` (app-created blob URL) / `URL.createObjectURL(pdf)` | `window.open` | URL | app-created blob URLs | - | Safe by inspection |
 | 14 | `contract-ui/DocumentPreview.jsx` `<object data>`/`<iframe src>` | `pdfUrl` (blob URL from the app's own PDF fetch) | iframe/object | URL | app-created blob URL | - | Safe by inspection |
@@ -60,6 +60,7 @@ Run from the worktree on branch `feature/ETP-4561`.
 |---------------|--------|
 | `npm test` (`schema_forge_core/packages/app-shell-core`) | 2187 tests, 2187 pass, 0 fail |
 | `npx vitest run` (same) | 65 files, 1351 tests pass |
-| `node --test tools/report-server/__tests__/*.test.js` (`schema_forge_core`) | 138 tests, 133 pass, 5 fail. The 5 failures are in report-helper whitelist / i18n / company-logo tests (untouched code: `templates/reports/helpers`, `server.js` branding); `output-sinks-escaping.test.js` passes 5/5 |
+| `npm test` (`schema_forge_core` root, cli) | 4007 tests, 4007 pass, 0 fail |
+| `node --test tools/report-server/__tests__/*.test.js` (`schema_forge_core`) | 138 tests, 133 pass, 5 fail. The same command on `origin/develop` (detached worktree): 133 tests, 128 pass, the same 5 fail (helper whitelist, i18n groupBy, company-logo, branding partial) — pre-existing, not caused by this change; `output-sinks-escaping.test.js` passes 5/5 |
 | `node --test src/lib/__tests__/escapeHtml.test.js` (`schema_forge/tools/app-shell`) | 4 pass |
-| `npx vitest run src/components/support/__tests__/helpDocs.vitest.js src/components/contract-ui/__tests__/ReportDrawer` (same) | 6 files, 58 tests pass |
+| `npx vitest run src/components/support/__tests__/helpDocs.vitest.js src/components/contract-ui/__tests__/ReportDrawer src/components/contract-ui/__tests__/output-escaping.vitest.jsx` (same) | all pass (helpDocs 20, output-escaping 16, ReportDrawer suites) |
