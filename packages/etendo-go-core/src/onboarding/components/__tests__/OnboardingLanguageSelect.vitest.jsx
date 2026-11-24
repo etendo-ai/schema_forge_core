@@ -12,7 +12,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@etendosoftware/app-shell-core/components/ui/select';
+} from '@etendo-ai/app-shell-core/components/ui/select';
 import { OnboardingLanguageSelect } from '../OnboardingLanguageSelect.jsx';
 
 /**

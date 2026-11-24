@@ -1,5 +1,5 @@
 {
-  "name": "@etendosoftware/api-gateway-core",
+  "name": "@etendo-ai/api-gateway-core",
   "version": "0.3.0",
   "type": "module",
   "main": "./dist/index.js",

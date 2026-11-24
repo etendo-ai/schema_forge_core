@@ -9,8 +9,8 @@ How to create independent repos (`localizacion-argentina`, `localizacion-españa
 ```
 etendo_schema_forge (this repo)
   └── packages/
-        ├── @etendosoftware/schema-forge-core      ← already published ✅
-        ├── @etendosoftware/app-shell-core          ← already published ✅
+        ├── @etendo-ai/schema-forge-core      ← already published ✅
+        ├── @etendo-ai/app-shell-core          ← already published ✅
         └── @schema-forge/cli                       ← needs to be published ⚠️
   └── tools/
         └── app-shell/                              ← stays here, used as shell host
@@ -18,7 +18,7 @@ etendo_schema_forge (this repo)
 
 localizacion-argentina/  (new repo)
   ├── .npmrc
-  ├── package.json   ← devDep: @schema-forge/cli + @etendosoftware/app-shell-core
+  ├── package.json   ← devDep: @schema-forge/cli + @etendo-ai/app-shell-core
   ├── schema_forge.properties
   ├── Makefile
   ├── artifacts/     ← AR-specific windows (empty at start)
@@ -168,7 +168,7 @@ localizacion-argentina/
 ### `.npmrc`
 
 ```ini
-@etendosoftware:registry=https://npm.pkg.github.com
+@etendo-ai:registry=https://npm.pkg.github.com
 @schema-forge:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
 ```
@@ -248,7 +248,7 @@ help:
 
 ### App shell (`tools/app-shell/`)
 
-The app-shell of the localization repo is a thin wrapper around `@etendosoftware/app-shell-core`. It only adds:
+The app-shell of the localization repo is a thin wrapper around `@etendo-ai/app-shell-core`. It only adds:
 - `windows/registry.js` — AR window loaders
 - `menu.json` — AR menu config
 
@@ -265,7 +265,7 @@ The app-shell of the localization repo is a thin wrapper around `@etendosoftware
     "build": "vite build"
   },
   "dependencies": {
-    "@etendosoftware/app-shell-core": "^0.1.0",
+    "@etendo-ai/app-shell-core": "^0.1.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^7.0.0"
@@ -283,7 +283,7 @@ The app-shell of the localization repo is a thin wrapper around `@etendosoftware
 **`tools/app-shell/tailwind.config.js`:**
 
 ```js
-import appShellPreset from '@etendosoftware/app-shell-core/tailwind-preset';
+import appShellPreset from '@etendo-ai/app-shell-core/tailwind-preset';
 
 export default {
   presets: [appShellPreset],

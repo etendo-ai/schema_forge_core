@@ -12,7 +12,7 @@ import { RETURN_LABELS, DOC_TYPE_LABEL_OVERRIDES } from '../../../cli/src/report
  *
  * The policy is specified by ADR-0004 (`com.etendoerp.go/docs/adr/`) and pinned by the
  * fixture table in `com.etendoerp.go/docs/security/csv-neutralization-fixtures.md`, whose
- * executable twin lives in `@etendosoftware/app-shell-core/lib/csv/csvNeutralizationFixtures.js`.
+ * executable twin lives in `@etendo-ai/app-shell-core/lib/csv/csvNeutralizationFixtures.js`.
  * Three implementations must satisfy it: this one, that package's `csvSerializer`, and
  * `NeoCsvExportService.java`.
  *

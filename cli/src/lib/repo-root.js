@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/** This package's root: cli/ in a checkout, node_modules/@etendosoftware/schema-forge-cli once installed. */
+/** This package's root: cli/ in a checkout, node_modules/@etendo-ai/schema-forge-cli once installed. */
 const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 /**
@@ -12,7 +12,7 @@ const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..'
  * 2. Running from a source checkout: the checkout root, one level above cli/.
  * 3. Installed under node_modules: the nearest directory at or above cwd that
  *    holds artifacts/, else cwd. Never the package's own location — `../..` of
- *    an installed script is node_modules/@etendosoftware, which holds no repo.
+ *    an installed script is node_modules/@etendo-ai, which holds no repo.
  *    The nearest ancestor holding artifacts/ wins, so a nested one shadows the root.
  */
 export function resolveRepoRoot({ env = process.env, cwd = process.cwd(), packageRoot = PACKAGE_ROOT } = {}) {

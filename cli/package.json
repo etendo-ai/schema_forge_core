@@ -1,5 +1,5 @@
 {
-  "name": "@etendosoftware/schema-forge-cli",
+  "name": "@etendo-ai/schema-forge-cli",
   "version": "0.3.0",
   "type": "module",
   "publishConfig": {

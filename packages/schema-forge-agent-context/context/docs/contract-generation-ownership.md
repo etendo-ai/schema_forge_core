@@ -6,10 +6,10 @@ Schema Forge is the producer of contracts and generated window outputs. Consumer
 
 | Package or asset | Owns | Does not own |
 |------------------|------|--------------|
-| `@etendosoftware/schema-forge-core` | reusable generator/validation logic and CI checks | generated business windows |
-| `@etendosoftware/app-shell-core` | shell runtime, auth/menu/layout/report contracts, styles, reusable UI | generated contracts, generated windows, app-specific business logic |
-| `@etendosoftware/schema-forge-agent-context` | portable agent instructions and reference docs | runtime code |
-| `@etendosoftware/schema-forge-stack` | package composition and setup/doctor commands | vendored business artifacts |
+| `@etendo-ai/schema-forge-core` | reusable generator/validation logic and CI checks | generated business windows |
+| `@etendo-ai/app-shell-core` | shell runtime, auth/menu/layout/report contracts, styles, reusable UI | generated contracts, generated windows, app-specific business logic |
+| `@etendo-ai/schema-forge-agent-context` | portable agent instructions and reference docs | runtime code |
+| `@etendo-ai/schema-forge-stack` | package composition and setup/doctor commands | vendored business artifacts |
 | consumer repo artifacts | generated contracts and generated windows for that app/domain | reusable app-shell platform internals |
 
 ## Regeneration Rules
@@ -28,7 +28,7 @@ Generated artifacts must be delivered explicitly if repositories split. Use one 
 - published artifact packages by domain or release train,
 - release bundles that include app-shell packages plus artifact tarballs.
 
-Do not move generated windows into `@etendosoftware/app-shell-core`, import generated windows through monorepo-relative package paths, or publish a stack package that silently vendors generated business windows.
+Do not move generated windows into `@etendo-ai/app-shell-core`, import generated windows through monorepo-relative package paths, or publish a stack package that silently vendors generated business windows.
 
 ## PR Checklist
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
 
 // Shared escape action for every onboarding screen with a platform-account
 // session. The visible label is also the accessible button name.

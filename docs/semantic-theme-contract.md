@@ -1,9 +1,9 @@
 # Semantic Accessibility Theme Contract
 
-`@etendosoftware/app-shell-core` owns version 1 of the semantic theme
+`@etendo-ai/app-shell-core` owns version 1 of the semantic theme
 contract. Its CSS defaults are in `src/styles.css`, the public Tailwind mapping
-is `@etendosoftware/app-shell-core/tailwind-preset`, and validation helpers are
-available from `@etendosoftware/app-shell-core/theme`.
+is `@etendo-ai/app-shell-core/tailwind-preset`, and validation helpers are
+available from `@etendo-ai/app-shell-core/theme`.
 
 | Token | Purpose | Minimum contrast |
 | --- | --- | --- |
