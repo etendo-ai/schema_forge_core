@@ -20,7 +20,7 @@
 //
 // Env:
 //   GITHUB_TOKEN   required — token with read + delete on org packages.
-//   ORG            default "etendosoftware".
+//   ORG            default: $GITHUB_REPOSITORY_OWNER, else "etendo-ai".
 //   MODE           required — "same-branch" | "stale-feature".
 //   BRANCH_NAME    required for same-branch — raw ref, e.g. "feature/ETP-4394".
 //   KEEP_VERSION   required for same-branch — the version to preserve.
@@ -32,7 +32,7 @@ import { join } from 'node:path';
 import { PACKAGE_FILES, REPO_ROOT } from './release-version.mjs';
 import { sanitizeBranchId } from './preview-version.mjs';
 
-const ORG = process.env.ORG || 'etendosoftware';
+const ORG = process.env.ORG || process.env.GITHUB_REPOSITORY_OWNER || 'etendo-ai';
 const TOKEN = process.env.GITHUB_TOKEN;
 const MODE = process.env.MODE;
 const DRY_RUN = /^(1|true)$/i.test(process.env.DRY_RUN || '');
@@ -98,7 +98,7 @@ async function listOurPackages() {
   }
   const matched = [];
   for (const pkg of all) {
-    // pkg.name may be scoped ("@etendosoftware/app-shell-core") or unscoped.
+    // pkg.name may be scoped ("@etendo-ai/app-shell-core") or unscoped.
     if (wanted.has(pkg.name)) matched.push({ apiName: pkg.name, canonical: wanted.get(pkg.name) });
     else if (wanted.has(pkg.name.split('/').pop()))
       matched.push({ apiName: pkg.name, canonical: wanted.get(pkg.name.split('/').pop()) });

@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { SignInIcon, CircleNotchIcon } from '@phosphor-icons/react';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
-import { useUI } from '@etendosoftware/app-shell-core/i18n';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
+import { useUI } from '@etendo-ai/app-shell-core/i18n';
 import { consumeLoginLink, resolveAuthErrorMessage } from '../api.js';
 import { AuthShell } from '../components/AuthShell.jsx';
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRightIcon, BuildingsIcon, UserIcon, ChatCircleIcon } from '@phosphor-icons/react';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
-import { Label } from '@etendosoftware/app-shell-core/components/ui/label';
-import { useUI, useLocaleSwitch } from '@etendosoftware/app-shell-core/i18n';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
+import { Label } from '@etendo-ai/app-shell-core/components/ui/label';
+import { useUI, useLocaleSwitch } from '@etendo-ai/app-shell-core/i18n';
 import { isProfileStepValid } from '../state.js';
 import { ONBOARDING_FIELD_LIMITS, fullNameLimitFor, exceedsLimit } from '../fieldLimits.js';
 import { trackOnboarding } from '../tracking.js';

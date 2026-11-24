@@ -41,7 +41,7 @@ if (!Element.prototype.setPointerCapture) Element.prototype.setPointerCapture = 
 // switcher (no LocaleProvider setLocale) — the "no dead control" case.
 const localeHost = vi.hoisted(() => ({ enabled: true }));
 
-vi.mock('@etendosoftware/app-shell-core/i18n', async (importOriginal) => {
+vi.mock('@etendo-ai/app-shell-core/i18n', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,

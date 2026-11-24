@@ -14,7 +14,7 @@ Use this packaged context as the default orientation when working on a consumer 
 - Schema Forge defines contracts, generated UI inputs, validation policy, and packaging boundaries.
 - Etendo Go serves runtime API behavior through NEO Headless.
 - External app-shell consumers receive the reusable shell runtime, shared styles, UI primitives, reporting frame, auth helpers, and menu/layout contracts.
-- Generated contracts and generated windows stay outside `@etendosoftware/app-shell-core`.
+- Generated contracts and generated windows stay outside `@etendo-ai/app-shell-core`.
 - Schema Forge remains the producer of generated contracts and generated outputs unless a consumer repo explicitly owns its own artifact generation.
 
 ## Hard Rules
@@ -22,8 +22,8 @@ Use this packaged context as the default orientation when working on a consumer 
 - Do not hardcode or guess window, process, or menu IDs.
 - Do not manually edit generated files under `artifacts/*/generated/`.
 - If a task touches a generated/custom window, update the related functional documentation in the same change.
-- Prefer public package imports such as `@etendosoftware/app-shell-core` over monorepo-relative imports.
-- Do not add frontend business logic to `@etendosoftware/app-shell-core` when it belongs to a specific window.
+- Prefer public package imports such as `@etendo-ai/app-shell-core` over monorepo-relative imports.
+- Do not add frontend business logic to `@etendo-ai/app-shell-core` when it belongs to a specific window.
 
 ## References
 

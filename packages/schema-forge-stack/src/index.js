@@ -1,9 +1,9 @@
-import { installAgentContext } from '@etendosoftware/schema-forge-agent-context';
+import { installAgentContext } from '@etendo-ai/schema-forge-agent-context';
 
 export const STACK_PACKAGES = [
-  '@etendosoftware/schema-forge-core',
-  '@etendosoftware/app-shell-core',
-  '@etendosoftware/schema-forge-agent-context',
+  '@etendo-ai/schema-forge-core',
+  '@etendo-ai/app-shell-core',
+  '@etendo-ai/schema-forge-agent-context',
 ];
 
 export const APP_SHELL_PEERS = [
@@ -55,9 +55,9 @@ export async function verifyStack() {
     return report;
   }
 
-  await import('@etendosoftware/schema-forge-core');
-  await import('@etendosoftware/app-shell-core/tailwind-preset');
-  await import('@etendosoftware/schema-forge-agent-context');
+  await import('@etendo-ai/schema-forge-core');
+  await import('@etendo-ai/app-shell-core/tailwind-preset');
+  await import('@etendo-ai/schema-forge-agent-context');
 
   return report;
 }
