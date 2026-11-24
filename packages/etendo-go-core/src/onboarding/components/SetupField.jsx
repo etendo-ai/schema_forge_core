@@ -1,6 +1,6 @@
 import React from 'react';
-import { Input } from '@etendosoftware/app-shell-core/components/ui/input';
-import { Label } from '@etendosoftware/app-shell-core/components/ui/label';
+import { Input } from '@etendo-ai/app-shell-core/components/ui/input';
+import { Label } from '@etendo-ai/app-shell-core/components/ui/label';
 
 export function SetupField({ id, label, required = false, trailingLabel, error, className = '', ...props }) {
   return (

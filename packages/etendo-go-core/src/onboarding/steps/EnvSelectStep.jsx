@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CircleNotchIcon, BuildingsIcon, PlusIcon, ArrowsClockwiseIcon } from '@phosphor-icons/react';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
-import { useUI } from '@etendosoftware/app-shell-core/i18n';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
+import { useUI } from '@etendo-ai/app-shell-core/i18n';
 import { loginEnvironment, fetchEnvironments } from '../api.js';
 import { rememberEnvironment } from '../state.js';
 import { buildAppReturnToHref, getSafeReturnTo } from '../oauthReturnTo.js';

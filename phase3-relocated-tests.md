@@ -2,7 +2,7 @@
 
 Removed from schema_forge_core's cli/test/ during Phase 2 cleanup because their subject-under-test
 lives in content that moved to etendo_schema_forge. Phase 3 must re-add these, adapted to import
-from the installed `@etendosoftware/schema-forge-cli` package instead of relative `../src/*.js`
+from the installed `@etendo-ai/schema-forge-cli` package instead of relative `../src/*.js`
 paths where they test cli/ logic, and relocated to sit next to their source under
 `tools/app-shell/src/windows/custom/<window>/__tests__/` where they test functional utility code.
 

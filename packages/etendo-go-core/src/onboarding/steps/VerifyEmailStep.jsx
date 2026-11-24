@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { EnvelopeSimpleIcon, CircleNotchIcon } from '@phosphor-icons/react';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
-import { useUI } from '@etendosoftware/app-shell-core/i18n';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
+import { useUI } from '@etendo-ai/app-shell-core/i18n';
 import { resendVerifyEmail } from '../api.js';
 import { AuthShell } from '../components/AuthShell.jsx';
 import { OnboardingSessionAction } from '../components/OnboardingSessionAction.jsx';

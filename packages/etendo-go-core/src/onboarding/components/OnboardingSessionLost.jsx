@@ -1,7 +1,7 @@
 import React from 'react';
 import { SignInIcon } from '@phosphor-icons/react';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
-import { useUI } from '@etendosoftware/app-shell-core/i18n';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
+import { useUI } from '@etendo-ai/app-shell-core/i18n';
 import { AuthShell } from './AuthShell.jsx';
 
 const AUTH_FEATURE_KEYS = ['onboardingAuthFeatureNoCard', 'onboardingAuthFeatureTrial', 'onboardingAuthFeatureInstantAccess'];

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Input } from '@etendosoftware/app-shell-core/components/ui/input';
-import { Label } from '@etendosoftware/app-shell-core/components/ui/label';
+import { Input } from '@etendo-ai/app-shell-core/components/ui/input';
+import { Label } from '@etendo-ai/app-shell-core/components/ui/label';
 
 /**
  * `leading` is a short fixed text shown inside the field before the value (a dialling code); it

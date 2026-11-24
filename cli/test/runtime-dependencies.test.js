@@ -1,7 +1,7 @@
 /**
  * Contract: every package a bin can load at runtime is a `dependency` (ETP-5511).
  *
- * A consumer installs @etendosoftware/schema-forge-cli without its
+ * A consumer installs @etendo-ai/schema-forge-cli without its
  * devDependencies, so a runtime import of a devDependency works in this repo and
  * crashes in every consumer with ERR_MODULE_NOT_FOUND. That shipped:
  * sf-validate-pipeline reached `@babel/parser` through quality-gate, and
