@@ -20,7 +20,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
  * has none, an SSO sign-up; then it is required. Everyone else never sees it.
  */
 
-vi.mock('@etendosoftware/app-shell-core/i18n', () => ({
+vi.mock('@etendo-ai/app-shell-core/i18n', () => ({
   useUI: () => (key, params = {}) => {
     const dictionary = { onboardingFieldTooLong: 'Must not exceed {max} characters' };
     let text = dictionary[key] ?? key;

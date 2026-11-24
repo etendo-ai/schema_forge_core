@@ -8,7 +8,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as onboardingState from '../state.js';
 import * as onboardingBarrel from '../index.js';
-import { purgeLegacyAuthStorage } from '@etendosoftware/app-shell-core/auth';
+import { purgeLegacyAuthStorage } from '@etendo-ai/app-shell-core/auth';
 
 /**
  * ETP-4576 — the `sf_auth_*` localStorage keys were never onboarding state: they were a HANDOFF
@@ -24,7 +24,7 @@ import { purgeLegacyAuthStorage } from '@etendosoftware/app-shell-core/auth';
  * channel.
  */
 
-vi.mock('@etendosoftware/app-shell-core/i18n', () => ({
+vi.mock('@etendo-ai/app-shell-core/i18n', () => ({
   useUI: () => (key) => key,
   useLocaleSwitch: () => ({ locale: 'en_US', setLocale: null }),
 }));

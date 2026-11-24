@@ -1,6 +1,6 @@
-import { sessionUnavailableError, whenSessionRevokeSettles } from '@etendosoftware/app-shell-core/auth/api';
-import { ACCOUNT_HEADER } from '@etendosoftware/app-shell-core/auth/sessionCredentials.js';
-import { isAccountMismatchText } from '@etendosoftware/app-shell-core/auth/sessionConflict.js';
+import { sessionUnavailableError, whenSessionRevokeSettles } from '@etendo-ai/app-shell-core/auth/api';
+import { ACCOUNT_HEADER } from '@etendo-ai/app-shell-core/auth/sessionCredentials.js';
+import { isAccountMismatchText } from '@etendo-ai/app-shell-core/auth/sessionConflict.js';
 import { isBusinessSector } from './businessSectors.js';
 import { readHubSpotContext } from './hubspotAttribution.js';
 

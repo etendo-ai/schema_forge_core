@@ -70,7 +70,7 @@ same fallback criterion as `LocationEditorModal`'s popup in the functional repo 
 `StructuredAddressComposer.effectiveBuildingNumber` on the backend — see `com.etendoerp.go`
 `docs/neo-headless.md` → "`buildingNumber` fallback, now consistent across every channel"). Building
 Name stays optional in every case. The limits live in `ONBOARDING_FIELD_LIMITS` (`fieldLimits.js`) and must stay in sync
-with `@etendosoftware/app-shell-core/lib/locationAddress.js` and the Java-side
+with `@etendo-ai/app-shell-core/lib/locationAddress.js` and the Java-side
 `StructuredAddressComposer` (`com.etendoerp.go`) — same 60/16/35 lengths, same composition
 algorithm for the Address Line 1/2 the backend ultimately writes to `C_LOCATION`. That core module is the
 canonical browser copy of the rule: it exports the length constants, `effectiveBuildingNumber`
