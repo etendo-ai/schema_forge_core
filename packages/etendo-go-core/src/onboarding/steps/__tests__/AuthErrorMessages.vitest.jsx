@@ -32,7 +32,7 @@ const CATALOG = {
   onboardingGenericError: 'Algo salió mal durante la puesta en marcha.',
 };
 
-vi.mock('@etendosoftware/app-shell-core/i18n', () => ({
+vi.mock('@etendo-ai/app-shell-core/i18n', () => ({
   useUI: () => (key, params = {}) => {
     let text = CATALOG[key] ?? key;
     Object.entries(params).forEach(([name, value]) => {

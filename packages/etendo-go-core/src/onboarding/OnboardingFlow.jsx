@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { CircleNotchIcon } from '@phosphor-icons/react';
-import { useUI } from '@etendosoftware/app-shell-core/i18n';
+import { useUI } from '@etendo-ai/app-shell-core/i18n';
 import {
   SESSION_RECHECK_INTERVAL_MS, announceSessionAccount, compareLiveSessionAccount, deleteCookieSession,
   isSessionUnavailable, listenSessionAccount, purgeLegacyAuthStorage,
-} from '@etendosoftware/app-shell-core/auth';
+} from '@etendo-ai/app-shell-core/auth';
 import {
   bindOnboardingAccount, fetchSession, fetchAccount, fetchEnvironments, isSessionLostError, loginEnvironment,
   fetchOnboardingDraft, saveOnboardingDraft, verifyEmail,

@@ -1,4 +1,4 @@
-# @etendosoftware/app-shell-core
+# @etendo-ai/app-shell-core
 
 Reusable runtime package for Schema Forge apps.
 
@@ -21,18 +21,18 @@ reports, and CRUD tools without duplicating those rules in the browser.
 ```json
 {
   "dependencies": {
-    "@etendosoftware/app-shell-core": "0.1.0"
+    "@etendo-ai/app-shell-core": "0.1.0"
   }
 }
 ```
 
 ```jsx
-import '@etendosoftware/app-shell-core/styles.css';
+import '@etendo-ai/app-shell-core/styles.css';
 import {
   AppShellRuntime,
   createAppShellConfig,
   createMemoryAuthStorage,
-} from '@etendosoftware/app-shell-core';
+} from '@etendo-ai/app-shell-core';
 
 const config = createAppShellConfig({
   menuGroups: [
@@ -70,15 +70,15 @@ export function App() {
 External consumers should depend on the package entrypoints instead of internal
 paths:
 
-- `@etendosoftware/app-shell-core` for the complete runtime surface.
-- `@etendosoftware/app-shell-core/runtime` for `AppShellRuntime`,
+- `@etendo-ai/app-shell-core` for the complete runtime surface.
+- `@etendo-ai/app-shell-core/runtime` for `AppShellRuntime`,
   `AppShellProviders`, `AuthGate`, and descriptor builders.
-- `@etendosoftware/app-shell-core/auth` for session storage, auth context, and API
+- `@etendo-ai/app-shell-core/auth` for session storage, auth context, and API
   fetch helpers.
-- `@etendosoftware/app-shell-core/layout` for shell layout primitives.
-- `@etendosoftware/app-shell-core/reports` for report descriptors and viewer frame.
-- `@etendosoftware/app-shell-core/styles.css` for the CSS/Tailwind token layer.
-- `@etendosoftware/app-shell-core/tailwind-preset` for the Tailwind theme tokens
+- `@etendo-ai/app-shell-core/layout` for shell layout primitives.
+- `@etendo-ai/app-shell-core/reports` for report descriptors and viewer frame.
+- `@etendo-ai/app-shell-core/styles.css` for the CSS/Tailwind token layer.
+- `@etendo-ai/app-shell-core/tailwind-preset` for the Tailwind theme tokens
   required by the published CSS and UI primitives.
 
 The package still expects the host app to provide React, React Router, Radix UI,
@@ -89,7 +89,7 @@ Generated contracts and generated windows remain outside this package by design.
 
 `apiFetch` / `createApiFetch` never let the browser's `TypeError('Failed to fetch')`
 escape. A request that got no HTTP answer rejects with a `NetworkError` (exported from
-`@etendosoftware/app-shell-core/auth`) whose `message` is already user-facing, so a call
+`@etendo-ai/app-shell-core/auth`) whose `message` is already user-facing, so a call
 site that shows `err.message` needs no change:
 
 | Situation | Result |
@@ -116,7 +116,7 @@ generic `messageKey` handling, as `classifyTransportError` in `lib/import` does.
 registers its translator once, and again on a locale switch:
 
 ```js
-import { registerErrorTranslator } from '@etendosoftware/app-shell-core/auth';
+import { registerErrorTranslator } from '@etendo-ai/app-shell-core/auth';
 
 const unregister = registerErrorTranslator((key, params) => translate(key, params));
 ```

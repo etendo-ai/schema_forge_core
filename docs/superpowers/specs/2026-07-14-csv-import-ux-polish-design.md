@@ -76,8 +76,8 @@ this was its only caller — verify during implementation.
 (`.sf-scrollbar-visible`, `styles.css:26-48`) already exists on this branch and is
 correctly wired (`ScrollPane className="sf-scrollbar-visible"`, `ImportReviewQueue.jsx:385`,
 CSS import chain verified through `tools/app-shell/src/index.css` →
-`@etendosoftware/app-shell-core/styles.css`). The problem is that the **published**
-`@etendosoftware/app-shell-core@0.3.5` package (what `etendo_schema_forge` currently has
+`@etendo-ai/app-shell-core/styles.css`). The problem is that the **published**
+`@etendo-ai/app-shell-core@0.3.5` package (what `etendo_schema_forge` currently has
 installed) predates this CSS rule entirely — `grep` for `sf-scrollbar-visible` in the
 installed package's `styles.css` finds nothing, while the sibling checkout on
 `feature/ETP-4447` has it at `packages/app-shell-core/src/styles.css:30-48`.

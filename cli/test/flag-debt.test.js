@@ -1109,7 +1109,7 @@ describe('the CLI — real process, real symlink (npm-bin regression, ETP-4686)'
   // the top-level `if (isMainModule(import.meta.url)) { main(); }` guard at
   // the bottom of flag-debt.js. That guard is exactly what broke when
   // invoked through an npm bin symlink (node_modules/.bin/sf-flag-debt ->
-  // ../@etendosoftware/schema-forge-cli/src/flag-debt.js, per this package's
+  // ../@etendo-ai/schema-forge-cli/src/flag-debt.js, per this package's
   // own "bin" entry): import.meta.url resolves through the symlink to the
   // real file, while process.argv[1] keeps the symlink path, so a plain
   // string-equality guard silently never calls main() — exit 0, zero output,

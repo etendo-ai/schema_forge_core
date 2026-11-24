@@ -1,5 +1,5 @@
 {
-  "name": "@etendosoftware/schema-forge-stack",
+  "name": "@etendo-ai/schema-forge-stack",
   "version": "0.3.0",
   "description": "Private Schema Forge stack meta-package for external consumers.",
   "type": "module",
@@ -21,9 +21,9 @@
     "test": "node --test test/*.test.js"
   },
   "dependencies": {
-    "@etendosoftware/app-shell-core": "0.3.0",
-    "@etendosoftware/schema-forge-agent-context": "0.3.0",
-    "@etendosoftware/schema-forge-core": "0.3.0"
+    "@etendo-ai/app-shell-core": "0.3.0",
+    "@etendo-ai/schema-forge-agent-context": "0.3.0",
+    "@etendo-ai/schema-forge-core": "0.3.0"
   },
   "peerDependencies": {
     "@phosphor-icons/react": "^2.1.0",
