@@ -223,7 +223,7 @@ describe('upsertField (propertyPath)', () => {
 
 describe('upsertField (validation -> MCP_CONFIG)', () => {
   const validation = { required: true, maxLength: 60, format: 'email', allowedSchemes: ['https'] };
-  // The keys NEO's McpValidationSection accepts; anything else would be refused there.
+  // The keys NEO's McpValidationSection knows (it ignores any other key, so this guards typos).
   const NEO_KEYS = ['required', 'minLength', 'maxLength', 'minimum', 'maximum', 'format', 'enum',
     'allowedSchemes'];
 
@@ -268,5 +268,18 @@ describe('upsertField (validation -> MCP_CONFIG)', () => {
     const client = createMockClient();
     await upsertField(client, { entityId: 'E', moduleId: 'M', fieldId: 'F', isIncluded: 'Y' });
     assert.ok(!client.updates[0].sql.includes('mcp_config'));
+  });
+});
+
+describe('mergeValidationIntoMcpConfig (unparseable existing text)', () => {
+  it('leaves another owner\'s unparseable text untouched', () => {
+    const originalWarn = console.warn;
+    console.warn = () => {};
+    try {
+      assert.equal(mergeValidationIntoMcpConfig('not json', { required: true }), 'not json');
+      assert.equal(mergeValidationIntoMcpConfig('not json', null), 'not json');
+    } finally {
+      console.warn = originalWarn;
+    }
   });
 });

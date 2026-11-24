@@ -272,6 +272,22 @@ describe('push-to-neo agentPrompt upsert params', () => {
     assert.equal(hidden.showInMcp, false);
   });
 
+  it('carries the contract validation from extractFieldsFromContract into upsertField params (ETP-4558)', () => {
+    const validation = { required: true, maxLength: 60, format: 'email' };
+    const contract = { entities: { contact: { fields: [
+      { name: 'etgoEmail', column: 'EM_Etgo_Email', visibility: 'editable', validation },
+      { name: 'plain', column: 'Plain', visibility: 'editable' },
+    ] } } };
+    const [withRule, without] = extractFieldsFromContract(contract);
+    assert.deepEqual(withRule.validation, validation);
+    assert.equal('validation' in without, false);
+
+    const ctx = { moduleId: 'MOD1', auditOpts: {}, fieldDefaultExprs: {} };
+    assert.deepEqual(buildFieldUpdateParams(withRule, ctx, 'F1', 'E1').validation, validation);
+    // No constraint: null, so upsertField clears a section left by an earlier push.
+    assert.equal(buildFieldUpdateParams(without, ctx, 'F1', 'E1').validation, null);
+  });
+
   it('passes field agentPrompt into upsertField params', () => {
     const params = buildFieldUpdateParams(
       {

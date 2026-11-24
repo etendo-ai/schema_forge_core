@@ -296,8 +296,11 @@ export function mergeValidationIntoMcpConfig(existingRaw, validation) {
       const parsed = JSON.parse(existingRaw);
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) config = parsed;
     } catch {
-      // Unparseable config is left to its owner; only a fresh validation replaces it.
-      if (!validation || Object.keys(validation).length === 0) return existingRaw;
+      // Unparseable config belongs to its owner: never overwrite it, even with a fresh validation.
+      if (validation && Object.keys(validation).length > 0) {
+        console.warn('  Warning: etgo_sf_field.mcp_config is not valid JSON; validation NOT written');
+      }
+      return existingRaw;
     }
   }
   if (validation && Object.keys(validation).length > 0) config.validation = validation;
