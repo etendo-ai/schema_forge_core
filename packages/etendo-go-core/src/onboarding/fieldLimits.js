@@ -77,7 +77,7 @@ export const ADDRESS_MAX_LENGTH = 60;
  * Pasada 2) confirmed a 70-char street produced a mid-word cut in the composed preview, so a
  * street over 60 chars is now rejected up front instead of silently truncated.
  *
- * Keep in sync with `@etendosoftware/app-shell-core/lib/locationAddress.js` and the Java-side
+ * Keep in sync with `@etendo-ai/app-shell-core/lib/locationAddress.js` and the Java-side
  * `StructuredAddressComposer`.
  */
 export const STREET_NAME_MAX_LENGTH = 60;

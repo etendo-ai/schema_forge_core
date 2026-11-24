@@ -14,7 +14,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
  * real `{max}` interpolation) and the callback props are spies.
  */
 
-vi.mock('@etendosoftware/app-shell-core/i18n', () => ({
+vi.mock('@etendo-ai/app-shell-core/i18n', () => ({
   useUI: () => (key, params = {}) => {
     const dictionary = { onboardingFieldTooLong: 'Must not exceed {max} characters' };
     let text = dictionary[key] ?? key;

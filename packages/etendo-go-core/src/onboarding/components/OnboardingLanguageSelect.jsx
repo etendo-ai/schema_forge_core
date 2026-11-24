@@ -1,5 +1,5 @@
 import React from 'react';
-import { Label } from '@etendosoftware/app-shell-core/components/ui/label';
+import { Label } from '@etendo-ai/app-shell-core/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -8,7 +8,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@etendosoftware/app-shell-core/components/ui/select';
+} from '@etendo-ai/app-shell-core/components/ui/select';
 import { LocaleFlagIcon } from './LocaleFlagIcon.jsx';
 
 export function OnboardingLanguageSelect({ label, locale, onChange, options, 'data-testid': testId }) {

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRightIcon } from '@phosphor-icons/react';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
-import { Label } from '@etendosoftware/app-shell-core/components/ui/label';
-import { useUI } from '@etendosoftware/app-shell-core/i18n';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
+import { Label } from '@etendo-ai/app-shell-core/components/ui/label';
+import { useUI } from '@etendo-ai/app-shell-core/i18n';
 import { isCompanyStepValid, isSampleDataOffered, isAddressBlockStarted } from '../state.js';
 import { BUSINESS_SECTORS, isBusinessSector } from '../businessSectors.js';
 import { ONBOARDING_FIELD_LIMITS, CLIENT_NAME_INPUT_MAX_LENGTH, STREET_NAME_INPUT_MAX_LENGTH, exceedsLimit } from '../fieldLimits.js';

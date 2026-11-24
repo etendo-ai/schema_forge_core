@@ -1,5 +1,5 @@
 import React from 'react';
-import { useUI } from '@etendosoftware/app-shell-core/i18n';
+import { useUI } from '@etendo-ai/app-shell-core/i18n';
 import { exceedsLimit } from '../fieldLimits.js';
 
 /**

@@ -191,7 +191,7 @@ protects replacement in-flight entries. Currency loading waits for session readi
 and checks session ownership after parsing.
 
 Core onboarding uses `persistEnvironmentSession(env, loginResponse)` from
-`@etendosoftware/etendo-go-core/onboarding/state`. It replaces the ambient provider
+`@etendo-ai/etendo-go-core/onboarding/state`. It replaces the ambient provider
 synchronously, clears omitted environment fields, then persists the legacy keys before
 any async cleanup/navigation. `buildEnvironmentSessionStorage` remains available.
 Custom storage adapters must support the existing `read/write/clear` contract.

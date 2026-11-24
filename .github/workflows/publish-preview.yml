@@ -73,7 +73,7 @@ jobs:
           node-version: 22
           cache: npm
           registry-url: https://npm.pkg.github.com
-          scope: '@etendosoftware'
+          scope: '@etendo-ai'
 
       - run: npm install
         env:

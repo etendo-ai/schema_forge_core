@@ -459,7 +459,7 @@ const SONAR_PROJECT_BY_ROOT = { frontend: 'schema-forge', backend: 'etendo-go' }
 export function resolveCoverageScript(repoRoot) {
   const candidates = [
     path.join(repoRoot, 'cli', 'sonar-coverage.sh'),
-    path.join(repoRoot, 'node_modules', '@etendosoftware', 'schema-forge-cli', 'sonar-coverage.sh'),
+    path.join(repoRoot, 'node_modules', '@etendo-ai', 'schema-forge-cli', 'sonar-coverage.sh'),
   ];
   return candidates.find((candidate) => isFile(candidate)) || null;
 }

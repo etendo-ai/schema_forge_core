@@ -1,4 +1,4 @@
-# Shared client-side data cache (`@etendosoftware/app-shell-core/data`)
+# Shared client-side data cache (`@etendo-ai/app-shell-core/data`)
 
 Cross-cutting, application-level cache for records and previously loaded
 data. Owned by `app-shell-core` — **not** by any consumer window or entity
@@ -25,7 +25,7 @@ import {
   createQueryCache,  // framework-agnostic cache factory
   createQueryKey,    // build an isolated query key
   matchesQueryKey,   // partial match for invalidation
-} from '@etendosoftware/app-shell-core/data';
+} from '@etendo-ai/app-shell-core/data';
 ```
 
 ### Composition

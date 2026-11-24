@@ -1,5 +1,5 @@
 import React from 'react';
-import { OnboardingFlow, coreSteps } from '@etendosoftware/etendo-go-core/onboarding';
+import { OnboardingFlow, coreSteps } from '@etendo-ai/etendo-go-core/onboarding';
 
 const AR_CONFIG = {
   apiBase: '',
