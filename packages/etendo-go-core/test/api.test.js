@@ -1,7 +1,7 @@
 // @covers packages/etendo-go-core/src/onboarding/api.js
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { deleteCookieSession, isSessionUnavailable } from '@etendosoftware/app-shell-core/auth/api';
+import { deleteCookieSession, isSessionUnavailable } from '@etendo-ai/app-shell-core/auth/api';
 import {
   ONBOARDING_ERROR_CODES,
   bindOnboardingAccount,

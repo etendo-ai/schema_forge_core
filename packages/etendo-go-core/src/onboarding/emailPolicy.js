@@ -1,5 +1,5 @@
 // Frontend email format validation. Mirrors the EMAIL_PATTERN used by the
-// declarative validation engine (@etendosoftware/app-shell-core
+// declarative validation engine (@etendo-ai/app-shell-core
 // lib/validation/formats.js) for immediate UX feedback only — the backend
 // remains the source of truth for uniqueness/existence checks.
 

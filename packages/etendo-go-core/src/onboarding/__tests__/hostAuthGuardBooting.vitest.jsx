@@ -22,7 +22,7 @@ const host = vi.hoisted(() => ({
   providerProps: [],
 }));
 
-vi.mock('@etendosoftware/app-shell-core/auth', async (importOriginal) => {
+vi.mock('@etendo-ai/app-shell-core/auth', async (importOriginal) => {
   const actual = await importOriginal();
   const { default: React } = await import('react');
   return {
@@ -37,7 +37,7 @@ vi.mock('@etendosoftware/app-shell-core/auth', async (importOriginal) => {
   };
 });
 
-vi.mock('@etendosoftware/app-shell-core/i18n', async (importOriginal) => {
+vi.mock('@etendo-ai/app-shell-core/i18n', async (importOriginal) => {
   const actual = await importOriginal();
   const { default: React } = await import('react');
   return {
@@ -52,7 +52,7 @@ vi.mock('../../../../../tools/etendo-go-ar/app-shell/src/pages/OnboardingPage.js
 });
 
 const App = (await import('../../../../../tools/etendo-go-ar/app-shell/src/App.jsx')).default;
-const { CREDENTIAL_MODES } = await import('@etendosoftware/app-shell-core/auth');
+const { CREDENTIAL_MODES } = await import('@etendo-ai/app-shell-core/auth');
 
 function setUrl(path) {
   window.history.replaceState({}, '', path);

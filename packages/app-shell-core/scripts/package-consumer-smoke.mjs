@@ -41,7 +41,7 @@ function writeFixtureFiles(tarballPath) {
       build: 'vite build',
     },
     dependencies: {
-      '@etendosoftware/app-shell-core': `file:${tarballPath}`,
+      '@etendo-ai/app-shell-core': `file:${tarballPath}`,
       '@vitejs/plugin-react': '^4.3.0',
       '@radix-ui/react-slot': '^1.2.4',
       'class-variance-authority': '^0.7.1',
@@ -62,25 +62,25 @@ function writeFixtureFiles(tarballPath) {
 
   writeFileSync(join(fixtureDir, 'index.html'), '<div id="root"></div><script type="module" src="/src/App.jsx"></script>\n');
   writeFileSync(join(fixtureDir, 'postcss.config.js'), 'export default { plugins: { tailwindcss: {}, autoprefixer: {} } };\n');
-  writeFileSync(join(fixtureDir, 'tailwind.config.js'), `import appShellCorePreset from '@etendosoftware/app-shell-core/tailwind-preset';
+  writeFileSync(join(fixtureDir, 'tailwind.config.js'), `import appShellCorePreset from '@etendo-ai/app-shell-core/tailwind-preset';
 
 export default {
   presets: [appShellCorePreset],
-  content: ['./src/**/*.{js,jsx}', './node_modules/@etendosoftware/app-shell-core/src/**/*.{js,jsx}'],
+  content: ['./src/**/*.{js,jsx}', './node_modules/@etendo-ai/app-shell-core/src/**/*.{js,jsx}'],
 };
 `);
 
   writeFileSync(join(fixtureDir, 'src', 'App.jsx'), `import React from 'react';
 import { createRoot } from 'react-dom/client';
-import '@etendosoftware/app-shell-core/styles.css';
+import '@etendo-ai/app-shell-core/styles.css';
 import {
   AppShellRuntime,
   createAppShellConfig,
   createMemoryAuthStorage,
   LogoutRoute,
-} from '@etendosoftware/app-shell-core';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button.jsx';
-import { Card, CardContent } from '@etendosoftware/app-shell-core/components/ui/card.jsx';
+} from '@etendo-ai/app-shell-core';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button.jsx';
+import { Card, CardContent } from '@etendo-ai/app-shell-core/components/ui/card.jsx';
 
 function Dashboard() {
   return (

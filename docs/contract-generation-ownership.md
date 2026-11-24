@@ -15,9 +15,9 @@ This document defines who produces contracts and generated outputs, who consumes
 | `artifacts/<report>/report-contract.json` | Report pipeline/manual report authoring | Report API, report viewer, tests | Report inputs, SQL/NEO endpoint, output shape, parameters, or template behavior changed |
 | `tools/app-shell/src/windows/custom/<window>/**` | Humans/agents | App-shell runtime and users | Never generated. Edit manually and keep aligned with the window contract |
 | `tools/app-shell/src/windows/registry.js` | Humans/agents, occasionally generator-assisted | App-shell routing/build | New generated window, removed window, or loader ownership changes |
-| `@etendosoftware/app-shell-core` | App-shell platform maintainers | Monorepo app-shell and external app-shell consumers | Shared runtime/platform change only. It must not include generated contracts or generated windows |
-| `@etendosoftware/schema-forge-core` | Schema Forge generator/platform maintainers | CI, boundary checks, package consumers | Reusable generator/validation logic changes |
-| `@etendosoftware/schema-forge-stack` | Package maintainers | External consumers | Package composition, doctor checks, or setup commands changed |
+| `@etendo-ai/app-shell-core` | App-shell platform maintainers | Monorepo app-shell and external app-shell consumers | Shared runtime/platform change only. It must not include generated contracts or generated windows |
+| `@etendo-ai/schema-forge-core` | Schema Forge generator/platform maintainers | CI, boundary checks, package consumers | Reusable generator/validation logic changes |
+| `@etendo-ai/schema-forge-stack` | Package maintainers | External consumers | Package composition, doctor checks, or setup commands changed |
 
 ## Producer and Consumer Contract
 
@@ -38,7 +38,7 @@ artifacts/<window>/generated/web/<window>/index.jsx
 Reusable packages deliberately stop before generated business assets:
 
 ```text
-@etendosoftware/app-shell-core
+@etendo-ai/app-shell-core
   owns runtime, layout, auth, reports, styles, reusable UI
 
 consumer repo or monorepo artifacts
@@ -86,12 +86,12 @@ If the repo is split later, generated artifacts must move as an explicit deliver
 Allowed split models:
 
 - **Consumer-owned artifacts:** the downstream app repo runs Schema Forge tooling and commits its own `artifacts/**`.
-- **Published artifact package:** a package such as `@etendosoftware/schema-forge-artifacts-<domain>` ships contracts/generated outputs for one domain or release train.
+- **Published artifact package:** a package such as `@etendo-ai/schema-forge-artifacts-<domain>` ships contracts/generated outputs for one domain or release train.
 - **Release bundle:** a release job emits app-shell packages plus artifact tarballs; consumers install packages and unpack artifacts as a controlled step.
 
 Not allowed:
 
-- Moving generated windows into `@etendosoftware/app-shell-core`.
+- Moving generated windows into `@etendo-ai/app-shell-core`.
 - Importing generated windows through monorepo-relative paths from a package.
 - Manually editing `artifacts/*/generated/**` to fix runtime issues.
 - Publishing a stack package that silently vendors generated business windows.
