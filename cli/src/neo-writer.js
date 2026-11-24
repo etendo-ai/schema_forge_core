@@ -281,6 +281,31 @@ const OPTIONAL_FIELD_COLUMNS = [
 ];
 
 /**
+ * ETP-4558 — merge a field's declarative `validation` object into its MCP_CONFIG JSON. NEO reads the
+ * `validation` section from there (`McpValidationSection`) and enforces it on every write. Other
+ * sections are kept; `null`/empty validation removes only the `validation` section.
+ *
+ * @param {string|null} existingRaw - current MCP_CONFIG text
+ * @param {object|null} validation - canonical validation object, or null to clear
+ * @returns {string|null} new MCP_CONFIG text, or null when nothing is left
+ */
+export function mergeValidationIntoMcpConfig(existingRaw, validation) {
+  let config = {};
+  if (existingRaw && String(existingRaw).trim() !== '') {
+    try {
+      const parsed = JSON.parse(existingRaw);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) config = parsed;
+    } catch {
+      // Unparseable config is left to its owner; only a fresh validation replaces it.
+      if (!validation || Object.keys(validation).length === 0) return existingRaw;
+    }
+  }
+  if (validation && Object.keys(validation).length > 0) config.validation = validation;
+  else delete config.validation;
+  return Object.keys(config).length > 0 ? JSON.stringify(config) : null;
+}
+
+/**
  * Insert or update a field row in etgo_sf_field.
  *
  * @param {import('pg').PoolClient} client
@@ -301,6 +326,8 @@ const OPTIONAL_FIELD_COLUMNS = [
  * @param {number} [params.seqNo]
  * @param {number|null} [params.gridSeqNo] - ETP-5848: position in the window list, NULL when the
  *   list does not show the field. etendo_list projects to these fields by default.
+ * @param {object|null} [params.validation] - ETP-4558: canonical validation object, merged into
+ *   MCP_CONFIG under `validation` (null clears it). Absent key leaves MCP_CONFIG untouched.
  * @param {object} [params.audit] - Override audit defaults
  * @returns {{ fieldId: string, created: boolean }}
  */
@@ -329,6 +356,15 @@ export async function upsertField(client, params) {
     ];
     const values = [entityId, moduleId, isIncluded, isReadOnly];
     let paramIndex = 5;
+
+    if ('validation' in params) {
+      const current = await client.query(
+        'SELECT mcp_config FROM etgo_sf_field WHERE etgo_sf_field_id = $1', [existingId]);
+      const merged = mergeValidationIntoMcpConfig(current?.rows?.[0]?.mcp_config ?? null,
+        params.validation);
+      setClauses.push(`mcp_config = $${paramIndex++}`);
+      values.push(merged);
+    }
 
     for (const [param, column, toValue] of OPTIONAL_FIELD_COLUMNS) {
       if (param in params) {
@@ -364,19 +400,23 @@ export async function upsertField(client, params) {
   const propertyPath = params.propertyPath ?? null;
   const pathColumn = propertyPath ? ', property_path' : '';
   const pathPlaceholder = propertyPath ? ', $21' : '';
+  const mcpConfig = mergeValidationIntoMcpConfig(null, params.validation ?? null);
   const values = [fieldId, entityId, columnId, moduleId,
     isIncluded, isReadOnly, isBusinessCritical, defaultValue, javaQualifier, seqNo,
     auditVals.ad_client_id, auditVals.ad_org_id, auditVals.isactive,
     auditVals.created, auditVals.createdby, auditVals.updated, auditVals.updatedby,
     agentPrompt, visibility, gridSeqNo];
   if (propertyPath) values.push(propertyPath);
+  const configColumn = mcpConfig ? ', mcp_config' : '';
+  const configPlaceholder = mcpConfig ? `, $${values.length + 1}` : '';
+  if (mcpConfig) values.push(mcpConfig);
   await client.query(
     `INSERT INTO etgo_sf_field
      (etgo_sf_field_id, etgo_sf_entity_id, ad_column_id, ad_module_id,
       isincluded, isreadonly, isbusinesscritical, defaultvalue, java_qualifier, seqno,
       ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-      agent_prompt, visibility, grid_seqno${pathColumn})
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20${pathPlaceholder})`,
+      agent_prompt, visibility, grid_seqno${pathColumn}${configColumn})
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20${pathPlaceholder}${configPlaceholder})`,
     values,
   );
   return { fieldId, created: true };

@@ -1155,7 +1155,7 @@ Per-field decision inputs (all optional):
 
 The projection logic is centralized in `cli/src/lib/field-validation.js` (`buildFieldValidation`, `projectValidation`, `VALIDATION_KEY_ORDER`) and shared by `resolve-curated.js` (builds the object) and `generate-contract.js` (re-projects it into canonical order).
 
-**Scope — frontend contract only.** The `validation` object is emitted on `frontendContract` fields and is consumed by the generated React SPA for client-side form validation. It is **not** pushed to NEO Headless and NEO does **not** enforce it at the API boundary — backend/runtime enforcement of these constraints is out of scope for ETP-4555 and may be addressed by a later SECURITY task. Until then, treat the object as an advisory client-side contract, not a server-enforced guarantee. See `docs/contract-field-distribution.md` and `docs/contract-generation-ownership.md` for the cross-system placement.
+**Scope.** The `validation` object is emitted on `frontendContract` fields for client-side form validation, and (ETP-4558) on `backendContract` fields too: `push-to-neo.js` writes it into `ETGO_SF_FIELD.MCP_CONFIG` as `{"validation": {...}}` (`upsertField` in `cli/src/neo-writer.js`, merged with any other section; a field with no constraints clears the section). NEO Headless (`com.etendoerp.go`, `NeoDeclarativeValidation`) enforces it on REST and batch writes before any customization or persistence, so the client-side check is no longer the only barrier. Unknown keys are ignored by NEO. See `docs/contract-field-distribution.md` and `docs/contract-generation-ownership.md` for the cross-system placement.
 
 ### Explicit null
 

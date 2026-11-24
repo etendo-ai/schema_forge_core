@@ -771,6 +771,10 @@ export function generateBackendContract(schema, rules = [], processes = []) {
         required: f.required,
       };
       if (f.businessCritical) field.businessCritical = true;
+      // ETP-4558 — NEO enforces the declarative constraints server-side; push-to-neo copies this
+      // object into ETGO_SF_FIELD.MCP_CONFIG. Same canonical projection as the frontend contract.
+      const validation = projectValidation(f.validation);
+      if (validation) field.validation = validation;
       // ETP-6148 — a property-path field: push-to-neo writes it as an ETGO_SF_FIELD row with
       // PROPERTY_PATH (no AD column), keyed by this path. Emitted only when present.
       if (f.propertyPath) field.propertyPath = f.propertyPath;
