@@ -8,8 +8,8 @@ if [[ -z "$ME" ]]; then
   exit 1
 fi
 REPOS=(
-  "etendosoftware/etendo_schema_forge"
-  "etendosoftware/com.etendoerp.go"
+  "etendo-ai/etendo_schema_forge"
+  "etendo-ai/com.etendoerp.go"
 )
 
 YELLOW='\033[1;33m'
@@ -23,7 +23,7 @@ printf "\n${CYAN}%-25s %-6s %-52s %-16s %-12s %-s${RESET}\n" \
 printf '%s\n' "$(printf '%.0s─' {1..130})"
 
 for REPO in "${REPOS[@]}"; do
-  SHORT="${REPO#etendosoftware/}"
+  SHORT="${REPO#etendo-ai/}"
 
   gh pr list --repo "$REPO" --state open \
     --json number,title,author,url,reviewDecision,reviews \
