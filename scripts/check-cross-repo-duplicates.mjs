@@ -19,7 +19,7 @@ import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SOURCE = /\.(js|cjs|mjs|ts|tsx)$/;
-const PACKAGE_I18N = "'@etendosoftware/schema-forge-cli/src/report-i18n.js'";
+const PACKAGE_I18N = "'@etendo-ai/schema-forge-cli/src/report-i18n.js'";
 const RELATIVE_I18N = "'./report-i18n.js'";
 const here = dirname(fileURLToPath(import.meta.url));
 const coreRoot = resolve(here, '..');
