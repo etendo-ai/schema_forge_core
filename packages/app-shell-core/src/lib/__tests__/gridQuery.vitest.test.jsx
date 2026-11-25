@@ -1,3 +1,4 @@
+// @covers packages/app-shell-core/src/lib/gridQuery.js
 import { describe, it, expect } from 'vitest';
 import {
   getDisplayText,
@@ -123,6 +124,38 @@ describe('resolveFilterMode', () => {
     expect(resolveFilterMode({ key: 'x' })).toBe('text');
     expect(resolveFilterMode({ key: 'x', type: 'string' })).toBe('text');
   });
+
+  it('infers numeric for signedDelta type', () => {
+    expect(resolveFilterMode({ key: 'x', type: 'signedDelta' })).toBe('numeric');
+  });
+
+  // ETP-4681 — `custom` carries no filter semantics, so it must NOT short-circuit
+  // the inference chain: it still deserves the `_ID` foreign-key heuristic.
+  it('falls through to the _ID heuristic for a custom column bound to a foreign key', () => {
+    expect(resolveFilterMode({ key: 'x', type: 'custom', column: 'C_DocTypeTarget_ID' }))
+      .toBe('identifier');
+  });
+
+  it('falls back to text for a custom column bound to a plain column', () => {
+    expect(resolveFilterMode({ key: 'x', type: 'custom', column: 'Name' })).toBe('text');
+  });
+
+  it('honors an explicit numeric filterMode over the custom type', () => {
+    expect(resolveFilterMode({
+      key: 'x', type: 'custom', column: 'OutstandingAmt', filterMode: 'numeric',
+    })).toBe('numeric');
+  });
+
+  it('honors an explicit date filterMode over the custom type', () => {
+    expect(resolveFilterMode({
+      key: 'x', type: 'custom', column: 'EM_Etgo_Due_Date', filterMode: 'date',
+    })).toBe('date');
+  });
+
+  it('applies the _ID heuristic to any future unrecognized type', () => {
+    expect(resolveFilterMode({ key: 'x', type: 'someUnknownFutureType', column: 'M_Warehouse_ID' }))
+      .toBe('identifier');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -172,6 +205,27 @@ describe('parseUserFilter', () => {
   it('returns null for invalid date range', () => {
     const col = { key: 'd', type: 'date' };
     expect(parseUserFilter(col, 'abc..def')).toBeNull();
+  });
+
+  it('parses date range with dot-separated dates on both sides', () => {
+    const col = { key: 'd', type: 'date' };
+    const result = parseUserFilter(col, '14.04.2026..15.04.2026');
+    expect(result).toEqual({
+      mode: 'date', op: 'range', value: ['2026-04-14', '2026-04-15'],
+      originalValue: '14.04.2026..15.04.2026',
+    });
+  });
+
+  it('does not hang on adversarial ".." range input (ReDoS regression, S5852)', () => {
+    const col = { key: 'd', type: 'date' };
+    // Many ".." occurrences followed by a line terminator (which `.` can't
+    // match) used to force O(n^2) backtracking in the old `.+?` / `.+` split.
+    const adversarial = '..'.repeat(200_000) + '\n' + 'z';
+    const start = performance.now();
+    const result = parseUserFilter(col, adversarial);
+    const elapsed = performance.now() - start;
+    expect(result).toBeNull();
+    expect(elapsed).toBeLessThan(1000);
   });
 
   it('parses enum label matching', () => {
@@ -309,6 +363,28 @@ describe('buildBackendFilter', () => {
     expect(buildBackendFilter(col, { mode: 'booleanLabel', value: false })).toEqual([
       { fieldName: 'posted', operator: 'equals', value: 'N' },
     ]);
+  });
+
+  it('ETP-4705: serializes a posted-like boolean column to Y/N through buildAdvancedFilterCriteria', () => {
+    // Regression: the "Contabilizado" (C_Invoice.Posted) filter used to send a
+    // JS boolean, and NEO Headless returned HTTP 500 / 0 rows. NEO stores the
+    // AD button/boolean column as the char 'Y'/'N' and filters it with an exact
+    // string `equals`, so the emitted backend criteria must carry 'Y'/'N'.
+    const cols = [{
+      key: 'posted', column: 'Posted', type: 'boolean',
+      badgeLabels: { true: 'Posted', false: 'Not posted' },
+    }];
+    const trueResult = buildAdvancedFilterCriteria({
+      rowOperator: 'and',
+      conditions: [{ field: 'posted', operator: 'equals', value: true }],
+    }, cols);
+    expect(trueResult).toEqual([{ fieldName: 'posted', operator: 'equals', value: 'Y' }]);
+
+    const falseResult = buildAdvancedFilterCriteria({
+      rowOperator: 'and',
+      conditions: [{ field: 'posted', operator: 'equals', value: false }],
+    }, cols);
+    expect(falseResult).toEqual([{ fieldName: 'posted', operator: 'equals', value: 'N' }]);
   });
 
   it('builds numeric with various operators', () => {
@@ -1513,6 +1589,56 @@ describe('resolveFilterMode — additional type coverage', () => {
 
   it('returns text for type=string with non-matching column name', () => {
     expect(resolveFilterMode({ key: 'name', type: 'string', column: 'Name' })).toBe('text');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ETP-4681 — the Dashboard `?filter=overdue` preload
+// ---------------------------------------------------------------------------
+
+describe('buildAdvancedFilterCriteria — custom column with explicit numeric filterMode', () => {
+  const invoiceColumns = [
+    { key: 'documentStatus', column: 'DocStatus', type: 'status' },
+    {
+      key: 'outstandingAmount',
+      column: 'OutstandingAmt',
+      type: 'custom',
+      filterMode: 'numeric',
+    },
+  ];
+
+  it('emits a numeric greaterThan criterion on the raw key (no backendFilterKey needed)', () => {
+    const filter = {
+      rowOperator: 'and',
+      conditions: [{ field: 'outstandingAmount', operator: 'greaterThan', value: 0 }],
+    };
+    expect(buildAdvancedFilterCriteria(filter, invoiceColumns)).toEqual([
+      { fieldName: 'outstandingAmount', operator: 'greaterThan', value: 0 },
+    ]);
+  });
+
+  it('emits both conditions of the overdue preload', () => {
+    const filter = {
+      rowOperator: 'and',
+      conditions: [
+        { field: 'documentStatus', operator: 'equals', value: 'CO' },
+        { field: 'outstandingAmount', operator: 'greaterThan', value: 0 },
+      ],
+    };
+    expect(buildAdvancedFilterCriteria(filter, invoiceColumns)).toEqual([
+      { fieldName: 'documentStatus', operator: 'equals', value: 'CO' },
+      { fieldName: 'outstandingAmount', operator: 'greaterThan', value: 0 },
+    ]);
+  });
+
+  it('coerces a string numeric value to a number', () => {
+    const filter = {
+      rowOperator: 'and',
+      conditions: [{ field: 'outstandingAmount', operator: 'greaterThan', value: '0' }],
+    };
+    expect(buildAdvancedFilterCriteria(filter, invoiceColumns)).toEqual([
+      { fieldName: 'outstandingAmount', operator: 'greaterThan', value: 0 },
+    ]);
   });
 });
 
