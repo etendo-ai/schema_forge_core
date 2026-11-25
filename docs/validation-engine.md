@@ -1,4 +1,4 @@
-# Validation Engine (`@etendosoftware/app-shell-core/lib/validation`)
+# Validation Engine (`@etendo-ai/app-shell-core/lib/validation`)
 
 **Ticket:** ETP-4556 (SECURITY 2/7)
 
@@ -27,7 +27,7 @@ packages/app-shell-core/src/lib/validation/
 ```
 
 ```js
-import { validateRecord, ERROR_CODES } from '@etendosoftware/app-shell-core/lib/validation';
+import { validateRecord, ERROR_CODES } from '@etendo-ai/app-shell-core/lib/validation';
 ```
 
 (The subpath `./lib/*` already resolves; an explicit `./lib/validation` export is
@@ -144,7 +144,7 @@ core has zero field-name inference.** When the pipeline emits `format` /
 `allowedSchemes` for these, delete the adapter.
 
 ```js
-import { applyCompatFormats } from '@etendosoftware/app-shell-core/lib/validation';
+import { applyCompatFormats } from '@etendo-ai/app-shell-core/lib/validation';
 const fieldsWithFormats = applyCompatFormats(fields); // explicit validation always wins
 ```
 

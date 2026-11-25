@@ -182,7 +182,7 @@ A minimal standalone Vite app that hosts AR windows. It is **not** an npm worksp
     "preview": "vite preview"
   },
   "dependencies": {
-    "@etendosoftware/app-shell-core": "*",
+    "@etendo-ai/app-shell-core": "*",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^7.0.0"
@@ -197,7 +197,7 @@ A minimal standalone Vite app that hosts AR windows. It is **not** an npm worksp
 }
 ```
 
-> `@etendosoftware/app-shell-core: "*"` resolves via the monorepo root's node_modules (hoisted). If it doesn't resolve, change `"*"` to `"../../node_modules/@etendosoftware/app-shell-core"` in the interim.
+> `@etendo-ai/app-shell-core: "*"` resolves via the monorepo root's node_modules (hoisted). If it doesn't resolve, change `"*"` to `"../../node_modules/@etendo-ai/app-shell-core"` in the interim.
 
 ### 3B — `tools/etendo-go-ar/app-shell/vite.config.js`
 
@@ -234,9 +234,9 @@ export default {
 };
 ```
 
-> When `@etendosoftware/app-shell-core` exposes its `tailwind-preset`, replace this with:
+> When `@etendo-ai/app-shell-core` exposes its `tailwind-preset`, replace this with:
 > ```js
-> import preset from '@etendosoftware/app-shell-core/tailwind-preset';
+> import preset from '@etendo-ai/app-shell-core/tailwind-preset';
 > export default { presets: [preset], content: [...] };
 > ```
 

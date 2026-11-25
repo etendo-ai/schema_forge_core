@@ -44,7 +44,7 @@ const EMAIL = 'ada@example.com';
 const CSRF_PROOF = 'csrf-proof';
 const COOLDOWN_KEY = `sf_verify_resend_until:${EMAIL}`;
 
-vi.mock('@etendosoftware/app-shell-core/i18n', () => ({
+vi.mock('@etendo-ai/app-shell-core/i18n', () => ({
   useUI: () => translate,
   // No setLocale → the steps skip the language selector entirely.
   useLocaleSwitch: () => ({ locale: 'en_US', setLocale: null }),

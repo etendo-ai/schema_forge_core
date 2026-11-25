@@ -17,7 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
  * test/onboardingDraftPersistence.test.js; this suite covers the user-visible half.
  */
 
-vi.mock('@etendosoftware/app-shell-core/i18n', () => ({
+vi.mock('@etendo-ai/app-shell-core/i18n', () => ({
   useUI: () => (key) => key,
   useLocaleSwitch: () => ({ locale: 'en_US', setLocale: null }),
 }));

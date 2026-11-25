@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { AuthProvider, useAuth, CREDENTIAL_MODES } from '@etendosoftware/app-shell-core/auth';
-import { LocaleProvider } from '@etendosoftware/app-shell-core/i18n';
+import { AuthProvider, useAuth, CREDENTIAL_MODES } from '@etendo-ai/app-shell-core/auth';
+import { LocaleProvider } from '@etendo-ai/app-shell-core/i18n';
 import OnboardingPage from './pages/OnboardingPage.jsx';
-import { buildOnboardingReturnTo } from '@etendosoftware/etendo-go-core/onboarding';
+import { buildOnboardingReturnTo } from '@etendo-ai/etendo-go-core/onboarding';
 import es_AR from './locales/es_AR.json';
 
 const LOCALE_DICTIONARIES = { es_AR };

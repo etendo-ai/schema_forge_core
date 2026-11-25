@@ -6,9 +6,9 @@ import { APP_SHELL_PEERS, STACK_PACKAGES, doctorStack, verifyStack } from '../sr
 describe('schema forge stack', () => {
   it('declares stack package dependencies', () => {
     assert.deepEqual(STACK_PACKAGES, [
-      '@etendosoftware/schema-forge-core',
-      '@etendosoftware/app-shell-core',
-      '@etendosoftware/schema-forge-agent-context',
+      '@etendo-ai/schema-forge-core',
+      '@etendo-ai/app-shell-core',
+      '@etendo-ai/schema-forge-agent-context',
     ]);
   });
 

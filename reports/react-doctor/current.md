@@ -11,11 +11,11 @@
 | Workspace | Score | Label | Files | Errors | Warnings |
 |---|---:|---|---:|---:|---:|
 | @schema-forge/ui-preview | 47 | Critical | 3 | 1 | 6 |
-| @etendosoftware/etendo-go-core | 50 | Critical | 31 | 0 | 58 |
-| @etendosoftware/app-shell-core | 61 | Needs work | 95 | 1 | 47 |
+| @etendo-ai/etendo-go-core | 50 | Critical | 31 | 0 | 58 |
+| @etendo-ai/app-shell-core | 61 | Needs work | 95 | 1 | 47 |
 | @schema-forge/quick-order-app | 67 | Needs work | 13 | 0 | 11 |
 | @schema-forge/decision-panel | 69 | Needs work | 6 | 0 | 13 |
-| @etendosoftware/schema-forge-stack | 82 | Needs work | 3 | 0 | 1 |
+| @etendo-ai/schema-forge-stack | 82 | Needs work | 3 | 0 | 1 |
 | @schema-forge/spike-hello-app | 96 | Great | 7 | 0 | 1 |
 
 ## Issues by category
