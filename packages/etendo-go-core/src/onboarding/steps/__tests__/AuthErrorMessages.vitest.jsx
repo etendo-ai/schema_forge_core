@@ -32,7 +32,7 @@ const CATALOG = {
   onboardingGenericError: 'Algo salió mal durante la puesta en marcha.',
 };
 
-vi.mock('@etendosoftware/app-shell-core/i18n', () => ({
+vi.mock('@etendo-ai/app-shell-core/i18n', () => ({
   useUI: () => (key, params = {}) => {
     let text = CATALOG[key] ?? key;
     Object.entries(params).forEach(([name, value]) => {
@@ -370,6 +370,8 @@ describe('every new-password screen shares the strength checklist (ETP-5258)', (
 
     typeInto(container, '#reg-password', STRONG_PASSWORD);
     typeInto(container, '#reg-sector', 'servicios');
+    // ETP-6363: the country is required too.
+    fireEvent.change(screen.getByTestId('country-select'), { target: { value: 'ES' } });
     ['minLength', 'uppercase', 'lowercase', 'number', 'special'].forEach((rule) => {
       expect(screen.getByTestId(`register-password-rule-${rule}`).dataset.met).toBe('true');
     });

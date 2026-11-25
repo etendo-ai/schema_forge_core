@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 
 describe('app-shell-core plain observability subpaths', () => {
   it('exposes the provider-import guard', async () => {
-    const guard = await import('@etendosoftware/app-shell-core/observability/providerImportGuard');
+    const guard = await import('@etendo-ai/app-shell-core/observability/providerImportGuard');
     assert.equal(typeof guard.findBannedProviderImports, 'function');
     assert.equal(typeof guard.isBannedProviderSpecifier, 'function');
     assert.ok(Array.isArray(guard.BANNED_PROVIDER_PREFIXES) && guard.BANNED_PROVIDER_PREFIXES.length > 0);
@@ -17,36 +17,36 @@ describe('app-shell-core plain observability subpaths', () => {
   });
 
   it('exposes the gateway', async () => {
-    const { createTelemetryGateway } = await import('@etendosoftware/app-shell-core/observability/gateway');
+    const { createTelemetryGateway } = await import('@etendo-ai/app-shell-core/observability/gateway');
     assert.equal(typeof createTelemetryGateway, 'function');
   });
 
   it('exposes the Sentry adapter', async () => {
-    const sentry = await import('@etendosoftware/app-shell-core/observability/adapters/sentry');
+    const sentry = await import('@etendo-ai/app-shell-core/observability/adapters/sentry');
     assert.equal(typeof sentry.createSentryAdapter, 'function');
     assert.equal(typeof sentry.sanitizeSentryEvent, 'function');
   });
 
   it('exposes the Mixpanel adapter', async () => {
-    const mixpanel = await import('@etendosoftware/app-shell-core/observability/adapters/mixpanel');
+    const mixpanel = await import('@etendo-ai/app-shell-core/observability/adapters/mixpanel');
     assert.equal(typeof mixpanel.createMixpanelAdapter, 'function');
     assert.equal(typeof mixpanel.sanitizeMixpanelEvent, 'function');
   });
 
   it('exposes the RUM adapter', async () => {
-    const rum = await import('@etendosoftware/app-shell-core/observability/adapters/rum');
+    const rum = await import('@etendo-ai/app-shell-core/observability/adapters/rum');
     assert.equal(typeof rum.createRumAdapter, 'function');
     assert.equal(typeof rum.sanitizeRumRequest, 'function');
   });
 
   it('exposes the Datadog adapter', async () => {
-    const datadog = await import('@etendosoftware/app-shell-core/observability/adapters/datadog');
+    const datadog = await import('@etendo-ai/app-shell-core/observability/adapters/datadog');
     assert.equal(typeof datadog.createDatadogAdapter, 'function');
     assert.equal(typeof datadog.sanitizeDatadogEvent, 'function');
   });
 
   it('exposes the sanitizer', async () => {
-    const sanitize = await import('@etendosoftware/app-shell-core/observability/sanitize');
+    const sanitize = await import('@etendo-ai/app-shell-core/observability/sanitize');
     assert.equal(typeof sanitize.sanitizeValue, 'function');
     assert.equal(typeof sanitize.normalizeRoute, 'function');
   });

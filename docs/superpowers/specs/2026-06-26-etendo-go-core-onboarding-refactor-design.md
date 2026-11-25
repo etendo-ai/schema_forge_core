@@ -18,9 +18,9 @@ Extract all common onboarding UI and logic into `packages/etendo-go-core/src/onb
 
 ## Package
 
-**`@etendosoftware/etendo-go-core`** — already created at `packages/etendo-go-core/`.  
+**`@etendo-ai/etendo-go-core`** — already created at `packages/etendo-go-core/`.  
 Onboarding lives at `packages/etendo-go-core/src/onboarding/` — a subfolder, not a separate npm package.  
-Exported as `@etendosoftware/etendo-go-core/onboarding`.
+Exported as `@etendo-ai/etendo-go-core/onboarding`.
 
 Both `tools/app-shell/` (ES) and `tools/etendo-go-ar/app-shell/` (AR) already have this package as a dependency.
 
@@ -123,7 +123,7 @@ packages/etendo-go-core/src/onboarding/
 
 ```
 src/pages/OnboardingPage.jsx      becomes a thin assembler:
-  import { OnboardingFlow, coreSteps } from '@etendosoftware/etendo-go-core/onboarding';
+  import { OnboardingFlow, coreSteps } from '@etendo-ai/etendo-go-core/onboarding';
 
   const ES_CONFIG = {
     apiBase: '',
@@ -150,7 +150,7 @@ src/pages/onboarding/onboardingReadiness.js   stays (ES-specific readiness check
 
 ```
 src/pages/OnboardingPage.jsx      AR assembler:
-  import { OnboardingFlow, coreSteps } from '@etendosoftware/etendo-go-core/onboarding';
+  import { OnboardingFlow, coreSteps } from '@etendo-ai/etendo-go-core/onboarding';
 
   const AR_CONFIG = {
     apiBase: import.meta.env.VITE_API_BASE || '',

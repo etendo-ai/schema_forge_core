@@ -44,7 +44,7 @@ jobs:
           node-version: 22
           cache: npm
           registry-url: https://npm.pkg.github.com
-          scope: '@etendosoftware'
+          scope: '@etendo-ai'
 
       - run: npm install
         env:
@@ -61,6 +61,8 @@ jobs:
         run: npm test --workspace=packages/schema-forge-agent-context
       - name: Schema Forge stack tests
         run: npm test --workspace=packages/schema-forge-stack
+      - name: API gateway core tests
+        run: npm test --workspace=packages/api-gateway-core
       - name: Schema Forge CLI tests
         run: npm test --workspace=cli
 
@@ -97,6 +99,7 @@ jobs:
             packages/schema-forge-agent-context \
             packages/schema-forge-stack \
             packages/etendo-go-core \
+            packages/api-gateway-core \
             cli; do
             NAME=$(node -p "require('./$WS/package.json').name")
             VERSION=$(node -p "require('./$WS/package.json').version")
@@ -135,7 +138,7 @@ jobs:
           curl -sS -X POST \
             -H "Authorization: Bearer ${{ secrets.SF_BUMP_PAT }}" \
             -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/etendosoftware/etendo_schema_forge/dispatches \
+            https://api.github.com/repos/${{ github.repository_owner }}/etendo_schema_forge/dispatches \
             -d '{"event_type":"core-released","client_payload":{"version":"${{ steps.ver.outputs.tag }}"}}'
 
   # --- D5b: sweep stale feature-branch previews after the real release ------

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LockIcon, EnvelopeSimpleIcon, EyeIcon, EyeSlashIcon, CircleNotchIcon, ArrowLeftIcon, CheckIcon } from '@phosphor-icons/react';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
-import { useUI, useLocaleSwitch } from '@etendosoftware/app-shell-core/i18n';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
+import { useUI, useLocaleSwitch } from '@etendo-ai/app-shell-core/i18n';
 import { loginAccount, loginWithSsoProvider, requestPasswordReset, confirmPasswordReset, fetchAccount, fetchEnvironments, AUTH_ERROR_UI_KEYS, resolveAuthErrorMessage } from '../api.js';
 import { isStrongPassword } from '../passwordPolicy.js';
 import { getConfiguredSsoProviders, renderSsoProviderButton } from '../sso.js';
@@ -105,10 +105,14 @@ export function LoginStep({ config, stepData, onNext, onBack, goToStep, setToken
       // branch below for why this is not "just in case".
       const credential = data.csrfToken ?? data.token;
       if (credential) {
+        // ETP-6363: the account and whether the provider's sign-in created it, for marketing's
+        // sign_up / login and user_identified (the host's GTM dataLayer). Not sent to Mixpanel.
         trackOnboarding(config, 'onboarding_auth_succeeded', {
           action: 'sso',
           provider,
           status: 'success',
+          accountCreated: data.accountCreated === true,
+          accountId: data.account?.id,
         });
         // The epic's `completeAuthentication` centralises the persist +
         // hand-off pair; its `token` parameter is the generic credential slot,
@@ -200,6 +204,7 @@ export function LoginStep({ config, stepData, onNext, onBack, goToStep, setToken
         trackOnboarding(config, 'onboarding_auth_succeeded', {
           action: 'login',
           status: 'success',
+          accountId: data.account?.id,
         });
         // Keep the loading state on: routeByEnvironments always ends by either
         // navigating away (window.location.href) or switching to another

@@ -6,8 +6,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@etendosoftware/app-shell-core/components/ui/dialog';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
+} from '@etendo-ai/app-shell-core/components/ui/dialog';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
 import { TermsContent } from './TermsContent.jsx';
 import { useTermsDocument } from './useTermsDocument.js';
 

@@ -1,5 +1,5 @@
 import { ONBOARDING_FIELD_LIMITS, fullNameLimitFor, exceedsLimit } from './fieldLimits.js';
-import { replaceAmbientSession } from '@etendosoftware/app-shell-core/auth/api';
+import { replaceAmbientSession } from '@etendo-ai/app-shell-core/auth/api';
 
 export const SETUP_STEP_DEFINITIONS = [
   { name: 'setup', estimate: '1s' },
