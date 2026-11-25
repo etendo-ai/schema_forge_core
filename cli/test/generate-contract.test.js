@@ -3325,3 +3325,15 @@ describe('generateFrontendContract — selector optionBadge', () => {
     assert.deepEqual(entity.fields.find(f => f.name === 'financialAccount').optionBadge, BADGE);
   });
 });
+
+describe('generateBackendContract (ETP-4558 validation channel)', () => {
+  it('emits the canonical validation object on the backend field and omits it when absent', () => {
+    const schema = structuredClone(minimalSchema);
+    schema.entities[0].fields[0].validation = { maxLength: 20, required: true, format: 'email' };
+    const bc = generateBackendContract(schema, sampleRules, sampleProcesses);
+    const fields = bc.entities.order.fields;
+    assert.deepEqual(Object.keys(fields.find(f => f.name === 'documentNo').validation),
+      ['required', 'maxLength', 'format']);
+    assert.equal('validation' in fields.find(f => f.name === 'dateOrdered'), false);
+  });
+});

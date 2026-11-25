@@ -87,6 +87,8 @@ export function extractFieldsFromContract(backendContract) {
         fieldName: field.name,
         column: field.column,
         visibility: field.visibility,
+        // ETP-4558 — declarative constraints NEO enforces; written into MCP_CONFIG on push.
+        ...(field.validation ? { validation: field.validation } : {}),
         // ETP-6148 — property-path field: keyed by its path, never by `column`.
         ...(field.propertyPath ? { propertyPath: field.propertyPath } : {}),
         businessCritical: field.businessCritical || false,
@@ -503,6 +505,9 @@ export function buildFieldUpdateParams(f, ctx, fieldId, entityId) {
       ? ctx.fieldAgentPrompts[fieldKey]
       : null;
   }
+  // ETP-4558: NEO enforces the per-field validation constraints server-side; push them through.
+  // null (no constraint) clears a section left by an earlier push.
+  fieldParams.validation = f.validation ?? null;
   if (ctx.fieldGridOrders) {
     fieldParams.gridSeqNo = ctx.fieldGridOrders[fieldKey] ?? null;
   }

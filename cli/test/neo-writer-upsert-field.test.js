@@ -9,7 +9,7 @@
  */
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { upsertField, normalizeVisibility, FIELD_VISIBILITIES } from '../src/neo-writer.js';
+import { upsertField, normalizeVisibility, FIELD_VISIBILITIES, mergeValidationIntoMcpConfig } from '../src/neo-writer.js';
 
 function createMockClient() {
   const updates = [];
@@ -218,5 +218,71 @@ describe('upsertField (propertyPath)', () => {
     const [insert] = client.inserts;
     assert.doesNotMatch(insert.sql, /property_path/);
     assert.equal(insert.params.length, 20);
+  });
+});
+
+describe('upsertField (validation -> MCP_CONFIG)', () => {
+  const validation = { required: true, maxLength: 60, format: 'email', allowedSchemes: ['https'] };
+  // The keys NEO's McpValidationSection knows (it ignores any other key, so this guards typos).
+  const NEO_KEYS = ['required', 'minLength', 'maxLength', 'minimum', 'maximum', 'format', 'enum',
+    'allowedSchemes'];
+
+  it('INSERT writes {"validation": ...} into mcp_config', async () => {
+    const client = createMockClient();
+    await upsertField(client, { entityId: 'E', moduleId: 'M', validation });
+    const config = JSON.parse(insertValue(client.inserts[0], 'mcp_config'));
+    assert.deepEqual(config, { validation });
+    for (const key of Object.keys(config.validation)) assert.ok(NEO_KEYS.includes(key), key);
+  });
+
+  it('INSERT without constraints does not name mcp_config', async () => {
+    const client = createMockClient();
+    await upsertField(client, { entityId: 'E', moduleId: 'M', validation: null });
+    assert.ok(!client.inserts[0].sql.includes('mcp_config'));
+  });
+
+  it('UPDATE merges with the existing sections and keeps them', async () => {
+    const client = createMockClient();
+    const query = client.query;
+    client.query = async (sql, params) => {
+      if (sql.includes('SELECT mcp_config')) {
+        return { rows: [{ mcp_config: '{"fields":{"visibility":"editable","reason":"r"}}' }] };
+      }
+      return query(sql, params);
+    };
+    await upsertField(client, { entityId: 'E', moduleId: 'M', fieldId: 'F', validation });
+    const sql = client.updates[0].sql;
+    assert.ok(sql.includes('mcp_config ='));
+    const written = client.updates[0].params.find(p => typeof p === 'string' && p.includes('"validation"'));
+    assert.deepEqual(JSON.parse(written), {
+      fields: { visibility: 'editable', reason: 'r' }, validation });
+  });
+
+  it('UPDATE with null validation removes only the validation section', async () => {
+    const merged = mergeValidationIntoMcpConfig('{"fields":{"reason":"r"},"validation":{"required":true}}', null);
+    assert.deepEqual(JSON.parse(merged), { fields: { reason: 'r' } });
+    assert.equal(mergeValidationIntoMcpConfig('{"validation":{"required":true}}', null), null);
+  });
+
+  it('UPDATE without the validation key leaves mcp_config untouched', async () => {
+    const client = createMockClient();
+    await upsertField(client, { entityId: 'E', moduleId: 'M', fieldId: 'F', isIncluded: 'Y' });
+    assert.ok(!client.updates[0].sql.includes('mcp_config'));
+  });
+});
+
+describe('mergeValidationIntoMcpConfig (unparseable existing text)', () => {
+  it('leaves another owner\'s unparseable text untouched', () => {
+    const originalWarn = console.warn;
+    console.warn = () => {};
+    try {
+      assert.equal(mergeValidationIntoMcpConfig('not json', { required: true }), 'not json');
+      assert.equal(mergeValidationIntoMcpConfig('not json', null), 'not json');
+      assert.equal(mergeValidationIntoMcpConfig('[1,2]', { required: true }), '[1,2]');
+      assert.equal(mergeValidationIntoMcpConfig('"text"', { required: true }), '"text"');
+      assert.equal(mergeValidationIntoMcpConfig('null', { required: true }), 'null');
+    } finally {
+      console.warn = originalWarn;
+    }
   });
 });
