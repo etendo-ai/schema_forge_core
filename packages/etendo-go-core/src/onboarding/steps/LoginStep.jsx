@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LockIcon, EnvelopeSimpleIcon, EyeIcon, EyeSlashIcon, CircleNotchIcon, ArrowLeftIcon, CheckIcon } from '@phosphor-icons/react';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
-import { useUI, useLocaleSwitch } from '@etendosoftware/app-shell-core/i18n';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
+import { useUI, useLocaleSwitch } from '@etendo-ai/app-shell-core/i18n';
 import { loginAccount, loginWithSsoProvider, requestPasswordReset, confirmPasswordReset, fetchAccount, fetchEnvironments, AUTH_ERROR_UI_KEYS, resolveAuthErrorMessage } from '../api.js';
 import { isStrongPassword } from '../passwordPolicy.js';
 import { getConfiguredSsoProviders, renderSsoProviderButton } from '../sso.js';

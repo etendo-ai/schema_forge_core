@@ -3,10 +3,10 @@
  *
  * Every CLI resolved its repo root as `SF_ROOT || <script dir>/../..`. From a
  * source checkout that is the checkout root, but once installed the script lives
- * in node_modules/@etendosoftware/schema-forge-cli/src, so `../..` is
- * node_modules/@etendosoftware. A plain `npx sf-validate-pipeline` from the
+ * in node_modules/@etendo-ai/schema-forge-cli/src, so `../..` is
+ * node_modules/@etendo-ai. A plain `npx sf-validate-pipeline` from the
  * consumer repo root (documented in the functional repo's CLAUDE.md) then failed
- * with ENOENT on node_modules/@etendosoftware/artifacts.
+ * with ENOENT on node_modules/@etendo-ai/artifacts.
  *
  * The root is now resolved in ONE place, `resolveRepoRoot()` in src/lib/repo-root.js:
  * SF_ROOT, else the checkout root when running from source, else the nearest
@@ -41,7 +41,7 @@ describe('resolveRepoRoot', () => {
   before(() => { tmp = mkdtempSync(join(tmpdir(), 'sf-root-')); });
   after(() => rmSync(tmp, { recursive: true, force: true }));
 
-  const installed = () => join(tmp, 'consumer', 'node_modules', '@etendosoftware', 'schema-forge-cli');
+  const installed = () => join(tmp, 'consumer', 'node_modules', '@etendo-ai', 'schema-forge-cli');
 
   it('prefers SF_ROOT', () => {
     assert.equal(
@@ -78,7 +78,7 @@ describe('installed sf-validate-pipeline without SF_ROOT', () => {
   before(() => {
     tmp = mkdtempSync(join(tmpdir(), 'sf-installed-'));
     consumer = join(tmp, 'consumer');
-    installedCli = join(consumer, 'node_modules', '@etendosoftware', 'schema-forge-cli');
+    installedCli = join(consumer, 'node_modules', '@etendo-ai', 'schema-forge-cli');
     mkdirSync(join(consumer, 'artifacts'), { recursive: true });
     // A real copy, not a symlink: Node resolves a symlinked main module to its
     // realpath, which would put the script back in this checkout and hide the bug.
@@ -107,7 +107,7 @@ describe('installed sf-validate-pipeline without SF_ROOT', () => {
     });
     const output = `${res.stdout}${res.stderr}`;
     assert.doesNotMatch(output, /ENOENT/, output);
-    assert.doesNotMatch(output, /node_modules[\\/]@etendosoftware[\\/]artifacts/, output);
+    assert.doesNotMatch(output, /node_modules[\\/]@etendo-ai[\\/]artifacts/, output);
     assert.equal(res.status, 0, output);
   });
 });

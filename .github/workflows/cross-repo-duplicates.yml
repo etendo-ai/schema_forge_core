@@ -1,0 +1,30 @@
+name: Cross-repo Duplicates
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main, develop, 'epic/**']
+  # A fix that lands only in schema_forge (the ETP-4898 scenario) never touches a core PR,
+  # so also check the two default branches daily. The matching workflow in schema_forge is
+  # a follow-up in that repo's PR (both repos are public, so no token is needed).
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: etendo-ai/etendo_schema_forge
+          path: schema_forge
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fail on cross-repo source divergence
+        run: node scripts/check-cross-repo-duplicates.mjs schema_forge

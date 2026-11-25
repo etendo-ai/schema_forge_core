@@ -1,5 +1,5 @@
 {
-  "name": "@etendosoftware/app-shell-core",
+  "name": "@etendo-ai/app-shell-core",
   "version": "0.3.0",
   "description": "Reusable Schema Forge app shell runtime without generated contracts or windows.",
   "type": "module",

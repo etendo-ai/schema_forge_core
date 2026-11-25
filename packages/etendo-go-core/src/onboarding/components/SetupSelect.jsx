@@ -1,5 +1,5 @@
 import React from 'react';
-import { Label } from '@etendosoftware/app-shell-core/components/ui/label';
+import { Label } from '@etendo-ai/app-shell-core/components/ui/label';
 
 export function SetupSelect({ id, label, required = false, value, onChange, children, className = '' }) {
   return (

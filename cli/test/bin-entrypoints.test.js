@@ -1,5 +1,5 @@
 /**
- * Contract for every `bin` entry of @etendosoftware/schema-forge-cli (ETP-5511).
+ * Contract for every `bin` entry of @etendo-ai/schema-forge-cli (ETP-5511).
  *
  * The functional repo runs these through `npx <bin>`, i.e. through a
  * node_modules/.bin/<bin> SYMLINK to the script. Two failure modes shipped and

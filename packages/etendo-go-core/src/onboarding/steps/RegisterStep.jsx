@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { UserPlusIcon, EnvelopeSimpleIcon, LockIcon, EyeIcon, EyeSlashIcon, CheckIcon, WarningCircleIcon, CircleNotchIcon, GiftIcon, PhoneIcon, CaretDownIcon } from '@phosphor-icons/react';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
-import { Label } from '@etendosoftware/app-shell-core/components/ui/label';
-import { useUI, useLocaleSwitch } from '@etendosoftware/app-shell-core/i18n';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
+import { Label } from '@etendo-ai/app-shell-core/components/ui/label';
+import { useUI, useLocaleSwitch } from '@etendo-ai/app-shell-core/i18n';
 import {
   registerAccount, loginWithSsoProvider, fetchTermsAndConditions, fetchTermsDocumentHtml,
   AUTH_ERROR_UI_KEYS,
