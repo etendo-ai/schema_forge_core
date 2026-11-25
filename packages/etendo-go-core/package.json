@@ -12,6 +12,7 @@
     "./onboarding": "./src/onboarding/index.js",
     "./onboarding/api": "./src/onboarding/api.js",
     "./onboarding/sso": "./src/onboarding/sso.js",
+    "./onboarding/hubspot-attribution": "./src/onboarding/hubspotAttribution.js",
     "./onboarding/state": "./src/onboarding/state.js",
     "./onboarding/password-policy": "./src/onboarding/passwordPolicy.js",
     "./onboarding/password-strength-checklist": "./src/onboarding/components/PasswordStrengthChecklist.jsx",
