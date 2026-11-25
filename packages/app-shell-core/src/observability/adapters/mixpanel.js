@@ -189,6 +189,9 @@ export function sanitizeMixpanelGroup(data, policy = {}) {
  * @param {'cookie'|'localStorage'} [options.persistence] Where the SDK keeps its identity and
  *   super-properties. `cookie` is the SDK default and is not governed by cookie consent; the
  *   host may choose `localStorage`.
+ * @param {boolean} [options.crossSubdomainCookie] Whether the cookie is set on the parent domain
+ *   (`.etendo.ai`), shared with the website, or on the exact host. Left to the SDK when absent
+ *   (its default is the parent domain).
  * @param {Iterable<string>} [options.allowedKeys] The gateway allowlist.
  * @param {Iterable<string>} [options.trustedKeys] Subset of `allowedKeys` exempt from the
  *   sensitive-key-name rule.
@@ -209,6 +212,7 @@ export function createMixpanelAdapter({
   debug = false,
   trackIp = false,
   persistence = 'cookie',
+  crossSubdomainCookie,
   allowedKeys,
   trustedKeys,
   approvedSdkProperties,
@@ -258,6 +262,7 @@ export function createMixpanelAdapter({
       track_marketing: false,
       save_referrer: false,
       persistence,
+      cross_subdomain_cookie: typeof crossSubdomainCookie === 'boolean' ? crossSubdomainCookie : undefined,
       property_blacklist: MIXPANEL_PROPERTY_BLACKLIST,
       hooks: {
         before_send_events: hook('before_send_events', sanitizeMixpanelEvent),
