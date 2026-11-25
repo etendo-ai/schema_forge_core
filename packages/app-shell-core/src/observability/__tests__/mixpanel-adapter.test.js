@@ -421,6 +421,21 @@ describe('createMixpanelAdapter — referrer and persistence', () => {
     await local.adapter.init({ context: {} });
     assert.equal(local.fake.config().persistence, 'localStorage');
   });
+
+  // ETP-6363 — marketing shares the cookie with the website (`.etendo.ai`).
+  it('sets the cookie on the parent domain only when the host says so, else leaves it to the SDK', async () => {
+    const byDefault = adapterWith();
+    await byDefault.adapter.init({ context: {} });
+    assert.equal('cross_subdomain_cookie' in byDefault.fake.config(), false);
+
+    const shared = adapterWith({ adapter: { crossSubdomainCookie: true } });
+    await shared.adapter.init({ context: {} });
+    assert.equal(shared.fake.config().cross_subdomain_cookie, true);
+
+    const hostOnly = adapterWith({ adapter: { crossSubdomainCookie: false } });
+    await hostOnly.adapter.init({ context: {} });
+    assert.equal(hostOnly.fake.config().cross_subdomain_cookie, false);
+  });
 });
 
 describe('createMixpanelAdapter — one-time stale identity reset (GDPR, ETP-4352)', () => {
