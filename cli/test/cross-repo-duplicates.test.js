@@ -68,7 +68,7 @@ describe('check-cross-repo-duplicates', () => {
   });
   it('compares a moved module with its core home, import specifier aside', () => {
     const moved = { moved: { 'old.js': { core: 'new.js', reason: 'x' } } };
-    const spec = "import { A } from '@etendosoftware/schema-forge-cli/src/report-i18n.js';\n";
+    const spec = "import { A } from '@etendo-ai/schema-forge-cli/src/report-i18n.js';\n";
     const ok = run({ 'new.js': "import { A } from './report-i18n.js';\nx" }, { 'old.js': `${spec}x` }, moved);
     assert.equal(ok.status, 0, ok.stderr);
     const bad = run({ 'new.js': "import { A } from './report-i18n.js';\nx" }, { 'old.js': `${spec}y` }, moved);

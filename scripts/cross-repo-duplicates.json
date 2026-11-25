@@ -3,7 +3,7 @@
   "divergent": {
     "cli/src/db.js": {
       "reason": "divergent API: core adds sweepCache/getCacheDrift/reportCacheDrift/resolveCacheDir/applyCacheModeFromEnv and renames DEFAULT_CACHE_PATH to DEFAULT_CACHE_DIR; schema_forge call sites must migrate",
-      "core": "01eccb6d44bc2396792d102f01be2acc83e6c51b869e361a9ef1c5f08c241203",
+      "core": "e598d0f87001c46fc4e63dd43b1dcb0efe2fab390fbac308714b00ac5687732c",
       "schema_forge": "034b3c35bc24dfc104e5ccffd528201fa0dbec00fc4e43b90d071b41fd87a164"
     },
     "cli/src/lib/ad-cache.js": {
@@ -39,7 +39,7 @@
     "cli/test/slice-labels.test.js": {
       "reason": "divergent: needs owner decision",
       "core": "7c634808076a7bc11d06eb8b4ef3b1d16f311acae314e4f378a68d318ae91cd9",
-      "schema_forge": "51491d9e1ff5336b6fa15cef9e4e8ddf0a2e74dccc68a936a09a63e5036492ff"
+      "schema_forge": "2da49303f3504cd7144288fdfbcddda682dc582c804199109fe3cfccb9e908f3"
     },
     "cli/test/data-fixes-parse-fix.test.js": {
       "reason": "follows cli/src/data-fixes/parse-fix.js",
