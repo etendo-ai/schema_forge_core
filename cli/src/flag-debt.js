@@ -609,6 +609,8 @@ export function checkTestSpecs(flag, context) {
       .map((spec) => {
         const { source } = part;
         const exists = source.root ? isFile(path.join(source.root, spec.path)) : false;
+        // Defensive path: a rollup never loads an absent registry, so its specs never get here;
+        // the rollup reports absent checkouts through issues.unverifiable instead.
         const unverifiable = !source.root;
         const status = unverifiable ? 'unverifiable' : specStatus(spec, exists);
         return {
