@@ -29,7 +29,7 @@
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const FALLBACK_SLUG = 'etendosoftware/schema_forge_core';
+const FALLBACK_SLUG = 'etendo-ai/schema_forge_core';
 const STATUS_CONTEXT = 'preview-package';
 const WAIT_INTERVAL_MS = 15_000;
 const WAIT_TIMEOUT_MS = 5 * 60_000;
