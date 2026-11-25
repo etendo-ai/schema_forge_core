@@ -27,7 +27,7 @@ const ACCOUNT = { name: 'Ada Lovelace', email: 'ada@example.com' };
 // a test can fire a successful SSO credential without a real Google button.
 let ssoHandlers = null;
 
-vi.mock('@etendosoftware/app-shell-core/i18n', () => ({
+vi.mock('@etendo-ai/app-shell-core/i18n', () => ({
   useUI: () => (key) => key,
   // No setLocale → the component skips the language selector entirely.
   useLocaleSwitch: () => ({ locale: 'en_US', setLocale: null }),

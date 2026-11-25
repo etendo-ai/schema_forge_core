@@ -213,7 +213,7 @@ const resolvedF19AllowlistPath = f19AllowlistPath ?? join(__dirname, 'validate-p
 ```
 
 `__dirname` is wherever `validate-pipeline.js` itself physically lives — inside
-`node_modules/@etendosoftware/schema-forge-cli/cli/src/` for the default (published-package) path,
+`node_modules/@etendo-ai/schema-forge-cli/cli/src/` for the default (published-package) path,
 or inside this repo's own `cli/src/` when run via a sibling checkout (`LOCAL_CORE=1`). **Neither**
 case is the consuming repo's root, so the consumer's own `validate-pipeline-f19-allowlist.json`
 (where real per-window exceptions like `product`/`sale` are documented) is never read — only this

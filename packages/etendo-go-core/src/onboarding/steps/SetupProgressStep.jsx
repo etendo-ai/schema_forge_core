@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CircleNotchIcon, CheckIcon, SparkleIcon, BuildingsIcon, GearIcon } from '@phosphor-icons/react';
-import { useUI } from '@etendosoftware/app-shell-core/i18n';
+import { useUI } from '@etendo-ai/app-shell-core/i18n';
 import { runOnboardingStream, fetchEnvironments, isSessionLostError, loginEnvironment } from '../api.js';
 import { initialSetupSteps, applyProgressMessage, rememberEnvironment } from '../state.js';
 import { buildAppReturnToHref, getSafeReturnTo } from '../oauthReturnTo.js';
@@ -9,7 +9,7 @@ import { trackOnboarding } from '../tracking.js';
 import { SetupProgressShell } from '../components/SetupProgressShell.jsx';
 import { SetupProgressCard } from '../components/SetupProgressCard.jsx';
 import { OnboardingSessionAction } from '../components/OnboardingSessionAction.jsx';
-import { Button } from '@etendosoftware/app-shell-core/components/ui/button';
+import { Button } from '@etendo-ai/app-shell-core/components/ui/button';
 
 // Status phrases rotated in the loading screen so a long step never reads as
 // frozen (ETP-4446, requested by UX). Only "in-progress" phrases — the

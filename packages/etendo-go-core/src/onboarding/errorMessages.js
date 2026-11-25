@@ -13,7 +13,7 @@
  *    here and never shown as-is.
  */
 
-import { isAccountMismatchText } from '@etendosoftware/app-shell-core/auth/sessionConflict.js';
+import { isAccountMismatchText } from '@etendo-ai/app-shell-core/auth/sessionConflict.js';
 
 const AD_MESSAGE_KEY_PATTERN = /^@([A-Za-z0-9_]+)@$/;
 

@@ -1,5 +1,5 @@
 {
-  "name": "@etendosoftware/schema-forge-core",
+  "name": "@etendo-ai/schema-forge-core",
   "version": "0.3.0",
   "type": "module",
   "publishConfig": {

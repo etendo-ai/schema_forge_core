@@ -1,8 +1,8 @@
 import React from 'react';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { AuthProvider, useAuth, createLocalAuthStorage } from '@etendosoftware/app-shell-core/auth';
-import { apiFetch, resetApiSessionForTests } from '@etendosoftware/app-shell-core/auth/api';
+import { AuthProvider, useAuth, createLocalAuthStorage } from '@etendo-ai/app-shell-core/auth';
+import { apiFetch, resetApiSessionForTests } from '@etendo-ai/app-shell-core/auth/api';
 import { persistEnvironmentSession, clearEnvironmentSession } from '../state.js';
 import { sessionFixture, deferred, jsonResponse, metadataResponse } from '../../../../app-shell-core/src/auth/__tests__/refreshFixtures.js';
 

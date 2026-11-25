@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckIcon } from '@phosphor-icons/react';
-import { useUI } from '@etendosoftware/app-shell-core/i18n';
+import { useUI } from '@etendo-ai/app-shell-core/i18n';
 import { getPasswordChecks, PASSWORD_RULES } from '../passwordPolicy.js';
 
 const PASSWORD_RULE_LABELS = {

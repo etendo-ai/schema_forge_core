@@ -24,7 +24,7 @@ import ES_AR_LOCALE from '../../../../../../tools/etendo-go-ar/app-shell/src/loc
  * SetupProgressStepSampleData.vitest.jsx and deliberately not repeated here.
  */
 
-vi.mock('@etendosoftware/app-shell-core/i18n', () => ({
+vi.mock('@etendo-ai/app-shell-core/i18n', () => ({
   useUI: () => (key) => key,
   // No setLocale → the language selector is skipped entirely.
   useLocaleSwitch: () => ({ locale: 'en_US', setLocale: null }),
