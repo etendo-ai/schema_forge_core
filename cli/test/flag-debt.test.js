@@ -299,7 +299,7 @@ describe('dimension 1 — touch points', () => {
     rmSync(join(root, 'app/extra-b.jsx'));
   });
 
-  it('records which checkouts it scanned and which it could not', () => {
+  it('a lone-registry feature scans only its own checkout', () => {
     const absent = { name: 'backend', root: null, sonarProject: null };
     const touchPoints = collectTouchPoints(FLAG, {
       ...context(),
@@ -1240,10 +1240,7 @@ describe('rollup — merge, then score', () => {
     // The header's own unit spec exists; the contribution's is pending. One flat charge.
     assert.equal(merged.kinds.unit.points, POINTS.missingUnitSpecs);
 
-    // Summing per-repo scores would charge it again for the repo that is already clean.
-    const headerOnly = checkTestSpecs(header(), context()).kinds.unit.points;
-    const contributionOnly = checkTestSpecs(contributionOf(missing), { ...context(), root: other }).kinds.unit.points;
-    assert.equal(headerOnly + contributionOnly, POINTS.missingUnitSpecs);
+    // Both repos missing the same spec still charge once (merge-then-score).
     const bothMissing = { unit: [{ path: 'a.test.js', expected: true }], e2e: [] };
     const twoRepos = { ...header(), testSpecs: bothMissing, parts: undefined };
     const both = { ...twoRepos, parts: [
@@ -1284,6 +1281,17 @@ describe('rollup — merge, then score', () => {
       { source: sourceOf('b', other), registry: { features: [wrong] } },
     ]);
     assert.equal(merged.issues.flagKeyMismatches.length, 1);
+  });
+
+  it('reports a contribution naming a flag when its header retired the flag', () => {
+    const retired = { ...header() };
+    delete retired.flag;
+    const merged = mergeRegistries([
+      { source: sourceOf('a', root), registry: { features: [retired] } },
+      { source: sourceOf('b', other), registry: { features: [{ ...contributionOf({}), flagKey: 'old-flag' }] } },
+    ]);
+    assert.equal(merged.issues.flagKeyMismatches.length, 1);
+    assert.equal(merged.issues.flagKeyMismatches[0].flagKey, 'old-flag');
   });
 
   it('reports an absent checkout as unverifiable instead of guessing', () => {

@@ -314,7 +314,7 @@ function groupById(loaded, issues) {
 
 function flagKeyMismatches(id, header, contributions) {
   return contributions
-    .filter(({ entry }) => entry.flagKey && header.entry.key && entry.flagKey !== header.entry.key)
+    .filter(({ entry }) => entry.flagKey && entry.flagKey !== header.entry.key)
     .map(({ source, entry }) => ({
       id, source: source.name, flagKey: entry.flagKey, headerKey: header.entry.key,
     }));
@@ -1099,7 +1099,7 @@ export function rollupWarnings(report) {
     lines.push(`  duplicate header: ${item.id} declared in ${item.sources.join(', ')} (first one used)`);
   }
   for (const item of issues.flagKeyMismatches) {
-    lines.push(`  flag key mismatch: ${item.id} in ${item.source} names ${item.flagKey}, header has ${item.headerKey}`);
+    lines.push(`  flag key mismatch: ${item.id} in ${item.source} names ${item.flagKey}, header has ${item.headerKey || 'no flag'}`);
   }
   return lines;
 }
