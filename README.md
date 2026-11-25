@@ -61,7 +61,7 @@ Clone this repository **inside** the Etendo project directory (sibling to `modul
 
 ```bash
 cd /path/to/etendo_core
-git clone git@github.com:etendosoftware/etendo_schema_forge.git schema_forge
+git clone git@github.com:etendo-ai/etendo_schema_forge.git schema_forge
 cd schema_forge
 git checkout develop
 ```
@@ -72,7 +72,7 @@ Clone the runtime module into the Etendo `modules/` directory:
 
 ```bash
 cd /path/to/etendo_core/modules
-git clone git@github.com:etendosoftware/com.etendoerp.go.git
+git clone git@github.com:etendo-ai/com.etendoerp.go.git
 cd com.etendoerp.go
 git checkout develop
 ```
@@ -537,7 +537,7 @@ schema_forge/
 
 ### `templates/` — the one tree that must stay in sync with the other repo
 
-The shared report helpers live in the published `@etendosoftware/schema-forge-cli` package:
+The shared report helpers live in the published `@etendo-ai/schema-forge-cli` package:
 `cli/src/report-html-helpers.js`, `cli/src/report-helpers/common.js` and
 `cli/src/report-helpers/jsreport-helpers.js`. `etendo_schema_forge` imports them from the
 package instead of keeping copies (ETP-4980), once it pins a release that contains them. The
