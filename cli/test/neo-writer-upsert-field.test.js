@@ -278,6 +278,9 @@ describe('mergeValidationIntoMcpConfig (unparseable existing text)', () => {
     try {
       assert.equal(mergeValidationIntoMcpConfig('not json', { required: true }), 'not json');
       assert.equal(mergeValidationIntoMcpConfig('not json', null), 'not json');
+      assert.equal(mergeValidationIntoMcpConfig('[1,2]', { required: true }), '[1,2]');
+      assert.equal(mergeValidationIntoMcpConfig('"text"', { required: true }), '"text"');
+      assert.equal(mergeValidationIntoMcpConfig('null', { required: true }), 'null');
     } finally {
       console.warn = originalWarn;
     }

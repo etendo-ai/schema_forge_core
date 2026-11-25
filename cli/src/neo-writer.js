@@ -292,16 +292,21 @@ const OPTIONAL_FIELD_COLUMNS = [
 export function mergeValidationIntoMcpConfig(existingRaw, validation) {
   let config = {};
   if (existingRaw && String(existingRaw).trim() !== '') {
+    let parsed;
     try {
-      const parsed = JSON.parse(existingRaw);
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) config = parsed;
+      parsed = JSON.parse(existingRaw);
     } catch {
-      // Unparseable config belongs to its owner: never overwrite it, even with a fresh validation.
+      parsed = undefined;
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      // Not a JSON object (unparseable text, an array, a scalar): another owner's content, never
+      // overwritten, even with a fresh validation.
       if (validation && Object.keys(validation).length > 0) {
-        console.warn('  Warning: etgo_sf_field.mcp_config is not valid JSON; validation NOT written');
+        console.warn('  Warning: etgo_sf_field.mcp_config is not a JSON object; validation NOT written');
       }
       return existingRaw;
     }
+    config = parsed;
   }
   if (validation && Object.keys(validation).length > 0) config.validation = validation;
   else delete config.validation;
