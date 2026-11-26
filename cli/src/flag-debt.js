@@ -504,6 +504,30 @@ export function classifyReference(relative, { ownedPaths, frameworkPaths, specPa
 
 // ── Dimension 1: touch points ───────────────────────────────────────────────
 
+/**
+ * The symbols to grep in one part's checkout. The header's are searched everywhere;
+ * a contribution's own only in its own checkout, so a backend class name quoted in
+ * the frontend is not charged as a frontend touch point. A retired flag (no live
+ * key) has nothing left to remove, so nothing is charged.
+ */
+function symbolsFor(flag, part) {
+  if (!flag.key) return [];
+  return unique([...(flag.headerSymbols || []), ...part.symbols]);
+}
+
+/** Buckets every file of one part's checkout that names one of `symbols`. */
+function scanPart(part, symbols, { nestedRoots, frameworkPaths, buckets }) {
+  const { source } = part;
+  const specPaths = specsOf(part).map((spec) => spec.path);
+  for (const relative of walkFiles(source.root, { skipPaths: nestedRoots })) {
+    const hits = findSymbolHits(path.join(source.root, relative), symbols);
+    if (hits.length === 0) continue;
+    const bucket = classifyReference(relative, { ownedPaths: part.paths, frameworkPaths, specPaths });
+    if (bucket === 'owned' || bucket === 'framework') continue;
+    buckets[bucket].push({ source: source.name, path: toPosix(relative), hits });
+  }
+}
+
 export function collectTouchPoints(flag, context) {
   const { frameworkPaths } = context;
   const buckets = { code: [], docs: [], tests: [] };
@@ -518,26 +542,14 @@ export function collectTouchPoints(flag, context) {
       continue;
     }
     scannedSources.push(source.name);
-    // The header's symbols are searched everywhere; a contribution's own symbols
-    // only in its own checkout, so a backend class name quoted in the frontend is
-    // not charged as a frontend touch point.
-    // A retired flag (no live key) has nothing left to remove, so no symbol is charged.
-    const symbols = flag.key ? unique([...(flag.headerSymbols || []), ...part.symbols]) : [];
-    const specPaths = specsOf(part).map((spec) => spec.path);
-
+    const symbols = symbolsFor(flag, part);
+    if (symbols.length === 0) continue;
     // Checkouts can nest; a file under the inner one must not be visited a
     // second time under the outer one, where its owned paths do not apply.
     const nestedRoots = parts
       .map((other) => other.source.root)
       .filter((dir) => dir && dir !== source.root);
-
-    for (const relative of walkFiles(source.root, { skipPaths: nestedRoots })) {
-      const hits = findSymbolHits(path.join(source.root, relative), symbols);
-      if (hits.length === 0) continue;
-      const bucket = classifyReference(relative, { ownedPaths: part.paths, frameworkPaths, specPaths });
-      if (bucket === 'owned' || bucket === 'framework') continue;
-      buckets[bucket].push({ source: source.name, path: toPosix(relative), hits });
-    }
+    scanPart(part, symbols, { nestedRoots, frameworkPaths, buckets });
   }
 
   for (const list of Object.values(buckets)) {
