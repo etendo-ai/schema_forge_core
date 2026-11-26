@@ -51,7 +51,7 @@ vi.mock('../../api.js', () => ({
 
 const api = await import('../../api.js');
 
-const { RegisterStep } = await import('../RegisterStep.jsx');
+const { RegisterStep, PRIVACY_POLICY_URL } = await import('../RegisterStep.jsx');
 const { ONBOARDING_FIELD_LIMITS } = await import('../../fieldLimits.js');
 
 const TERMS = { version: '2026-11', language: null, publishedAt: 1000 };
@@ -200,6 +200,19 @@ describe('RegisterStep trial offer and terms and conditions (ETP-6081)', () => {
     expect(screen.getByTestId('register-trial-banner').textContent).toContain('onboardingTrialOfferBanner');
   });
 
+  // ETP-6363 — marketing's notice: the terms open in the app, the privacy policy on the website.
+  it('states both the terms and the privacy policy, linking the policy to the website', () => {
+    renderRegisterStep();
+    expect(screen.getByTestId('register-terms-notice').textContent).toBe(
+      'onboardingTermsNoticePrefixonboardingTermsLinkonboardingTermsNoticeMiddleonboardingPrivacyLinkonboardingTermsNoticeSuffix',
+    );
+    const privacy = screen.getByTestId('register-privacy-link');
+    expect(privacy.getAttribute('href')).toBe('https://etendo.ai/aviso-legal/#privacidad');
+    expect(PRIVACY_POLICY_URL).toBe(privacy.getAttribute('href'));
+    expect(privacy.getAttribute('target')).toBe('_blank');
+    expect(privacy.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
   it('loads the terms in force in the UI language', async () => {
     renderRegisterStep();
     await waitFor(() => expect(api.fetchTermsAndConditions).toHaveBeenCalledWith(expect.any(Function), '', 'en_US'));
@@ -262,7 +275,24 @@ describe('RegisterStep trial offer and terms and conditions (ETP-6081)', () => {
 
     await waitFor(() => expect(api.registerAccount).toHaveBeenCalledWith(
       expect.any(Function), '', expect.objectContaining({ email: VALID_EMAIL, termsVersion: TERMS.version }),
+      expect.any(Object),
     ));
+  });
+
+  // ETP-6363 — HubSpot keeps the texts as the proof of the consent: the ones on screen.
+  it('sends the consent texts exactly as shown, with the checkbox label', async () => {
+    api.registerAccount.mockResolvedValue({ csrfToken: 'csrf', account: { name: 'Ada' } });
+    const { container } = renderRegisterStep({ handleRegisterSuccess: vi.fn() });
+    fireEvent.change(container.querySelector('#reg-name'), { target: { value: 'Ada' } });
+    typeEmail(container, VALID_EMAIL);
+
+    fireEvent.submit(container.querySelector('form'));
+
+    await waitFor(() => expect(api.registerAccount).toHaveBeenCalled());
+    expect(api.registerAccount.mock.calls[0][3]).toEqual({
+      consentText: screen.getByTestId('register-terms-notice').textContent,
+      communicationsText: 'onboardingMarketingConsent',
+    });
   });
 
   it('sends no terms version when the terms could not be loaded', async () => {
@@ -317,6 +347,7 @@ describe('RegisterStep optional phone (ETP-6081)', () => {
 
     await waitFor(() => expect(api.registerAccount).toHaveBeenCalledWith(
       expect.any(Function), '', expect.objectContaining({ phone: '+54 11 4567 8901' }),
+      expect.any(Object),
     ));
   });
 
@@ -430,6 +461,7 @@ describe('RegisterStep consent to promotional mail (ETP-6081)', () => {
 
     await waitFor(() => expect(api.registerAccount).toHaveBeenCalledWith(
       expect.any(Function), '', expect.objectContaining({ marketingConsent: true }),
+      expect.any(Object),
     ));
   });
 
@@ -450,6 +482,7 @@ describe('RegisterStep consent to promotional mail (ETP-6081)', () => {
 
     await waitFor(() => expect(api.registerAccount).toHaveBeenCalledWith(
       expect.any(Function), '', expect.objectContaining({ marketingConsent: false }),
+      expect.any(Object),
     ));
   });
 
