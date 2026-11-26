@@ -123,6 +123,7 @@ SONAR_HOST_URL="${SONAR_HOST_URL%/}"
 
 # ── Validate prerequisites ────────────────────────────────────────────────────
 errors=()
+[[ ${#PROJECT_NAMES[@]} -eq 0 ]] && errors+=("No repo with a sonar-project.properties found; set SONAR_PROJECT_ROOTS=name=/path[,...].")
 [[ ${#FILES[@]} -eq 0 ]] && errors+=("No file specified. Usage: $0 [options] <file> [<file> ...]")
 [[ -z "${SONAR_TOKEN:-}" ]] && errors+=("SONAR_TOKEN is not defined. Add 'export SONAR_TOKEN=...' to ~/.zshrc or ~/.bashrc (must be a User Token squ_).")
 [[ -z "${SONAR_HOST_URL:-}" ]] && errors+=("SONAR_HOST_URL is not defined. Add 'export SONAR_HOST_URL=...' to ~/.zshrc or ~/.bashrc (e.g. https://sonar.etendo.cloud).")
@@ -131,7 +132,7 @@ command -v python3 &>/dev/null || errors+=("python3 is not installed.")
 if [[ -n "$BRANCH" && -n "$PR_KEY" ]]; then
   errors+=("--branch and --pull-request are mutually exclusive.")
 fi
-if [[ -n "$FORCE_PROJECT" ]] && ! root_of_project "$FORCE_PROJECT" >/dev/null; then
+if [[ -n "$FORCE_PROJECT" && ${#PROJECT_NAMES[@]} -gt 0 ]] && ! root_of_project "$FORCE_PROJECT" >/dev/null; then
   errors+=("--project must be one of: ${PROJECT_NAMES[*]:-none found} (got: $FORCE_PROJECT).")
 fi
 if [[ ${#errors[@]} -gt 0 ]]; then

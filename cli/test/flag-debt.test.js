@@ -1205,7 +1205,7 @@ describe('rollup — merge, then score', () => {
     assert.deepEqual(features[0].contributedBy, ['backend']);
     assert.equal(features[0].parts.length, 2);
     assert.deepEqual(features[0].deferredItems.map(i => i.id), ['backend-gap']);
-    assert.deepEqual(issues, { orphans: [], duplicateHeaders: [], flagKeyMismatches: [], unverifiable: [] });
+    assert.deepEqual(issues, { orphans: [], duplicateHeaders: [], flagKeyMismatches: [], backendKeyless: [], unverifiable: [] });
   });
 
   it('scans each checkout with the header symbols plus that part\'s own symbols', () => {
@@ -1281,6 +1281,21 @@ describe('rollup — merge, then score', () => {
       { source: sourceOf('b', other), registry: { features: [wrong] } },
     ]);
     assert.equal(merged.issues.flagKeyMismatches.length, 1);
+  });
+
+  it('reports a backend-scoped header that no contribution names by flagKey', () => {
+    const backend = { ...header(), flag: { ...header().flag, scope: 'backend' } };
+    const keyless = mergeRegistries([
+      { source: sourceOf('a', root), registry: { features: [backend] } },
+      { source: sourceOf('b', other), registry: { features: [{ ...contributionOf({}), flagKey: undefined }] } },
+    ]);
+    assert.deepEqual(keyless.issues.backendKeyless,
+      [{ id: backend.id, headerKey: backend.flag.key, headerSource: 'a' }]);
+    const keyed = mergeRegistries([
+      { source: sourceOf('a', root), registry: { features: [backend] } },
+      { source: sourceOf('b', other), registry: { features: [{ ...contributionOf({}), flagKey: backend.flag.key }] } },
+    ]);
+    assert.deepEqual(keyed.issues.backendKeyless, []);
   });
 
   it('reports a contribution naming a flag when its header retired the flag', () => {

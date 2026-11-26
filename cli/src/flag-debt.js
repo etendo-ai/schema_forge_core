@@ -295,6 +295,8 @@ const unique = (list) => [...new Set(list)];
  *   orphans            contributions with no header anywhere (not scored)
  *   duplicateHeaders   an id with several headers (first one wins)
  *   flagKeyMismatches  a contribution naming a different flag than its header
+ *   backendKeyless     a live `scope: "backend"` flag no contribution names by
+ *                      `flagKey`, so no repo's key-sync test can vouch for it
  *   unverifiable       checkouts that are absent, so their slices are missing
  */
 function groupById(loaded, issues) {
@@ -320,6 +322,13 @@ function flagKeyMismatches(id, header, contributions) {
     }));
 }
 
+function backendKeyless(id, header, contributions) {
+  const flag = header.entry.flag;
+  if (!flag || flag.scope !== 'backend') return [];
+  if (contributions.some(({ entry }) => entry.flagKey === flag.key)) return [];
+  return [{ id, headerKey: flag.key, headerSource: header.source.name }];
+}
+
 function mergeGroup(id, group, issues) {
   const headers = group.filter(({ entry }) => !entry.contribution);
   const contributions = group.filter(({ entry }) => entry.contribution);
@@ -332,6 +341,7 @@ function mergeGroup(id, group, issues) {
   }
   const [header] = headers;
   issues.flagKeyMismatches.push(...flagKeyMismatches(id, header, contributions));
+  issues.backendKeyless.push(...backendKeyless(id, header, contributions));
   const members = [header, ...contributions];
   return {
     ...header.entry,
@@ -344,7 +354,7 @@ function mergeGroup(id, group, issues) {
 }
 
 export function mergeRegistries(loaded) {
-  const issues = { orphans: [], duplicateHeaders: [], flagKeyMismatches: [], unverifiable: [] };
+  const issues = { orphans: [], duplicateHeaders: [], flagKeyMismatches: [], backendKeyless: [], unverifiable: [] };
   const features = [...groupById(loaded, issues)]
     .map(([id, group]) => mergeGroup(id, group, issues))
     .filter(Boolean);
@@ -1106,6 +1116,9 @@ export function rollupWarnings(report) {
   }
   for (const item of issues.flagKeyMismatches) {
     lines.push(`  flag key mismatch: ${item.id} in ${item.source} names ${item.flagKey}, header has ${item.headerKey || 'no flag'}`);
+  }
+  for (const item of issues.backendKeyless) {
+    lines.push(`  backend flag without key: ${item.id} (${item.headerKey}) is scope "backend" but no contribution names it by flagKey — nothing checks it against a constant`);
   }
   return lines;
 }
