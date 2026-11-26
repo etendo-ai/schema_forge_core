@@ -181,18 +181,36 @@ export async function fetchSession(fetchImpl, baseUrl) {
   }
 }
 
-/** ETP-6363 — the lead attribution a sign-up carries, when there is any (see hubspotAttribution.js). */
-function withHubSpotContext(body) {
-  const hubspotContext = readHubSpotContext();
-  return hubspotContext ? { ...body, hubspotContext } : body;
+/**
+ * ETP-6363 — what a sign-up carries for HubSpot, when there is any: the lead attribution (see
+ * hubspotAttribution.js) and the consent texts the visitor was shown. HubSpot keeps those texts as
+ * the proof of the consent, so they are the ones on screen, in the visitor's language.
+ *
+ * @param {object} body the request body
+ * @param {{ consentText?: string, communicationsText?: string }} [consentTexts]
+ */
+function withHubSpotContext(body, consentTexts = {}) {
+  const hubspotContext = { ...readHubSpotContext() };
+  for (const key of ['consentText', 'communicationsText']) {
+    const text = typeof consentTexts[key] === 'string' ? consentTexts[key].trim() : '';
+    if (text) hubspotContext[key] = text;
+  }
+  return Object.keys(hubspotContext).length ? { ...body, hubspotContext } : body;
 }
 
-export async function registerAccount(fetchImpl, baseUrl, form) {
+/**
+ * @param {Function} fetchImpl
+ * @param {string} baseUrl
+ * @param {object} form the sign-up
+ * @param {{ consentText?: string, communicationsText?: string }} [consentTexts] the consent texts
+ *   on screen (ETP-6363)
+ */
+export async function registerAccount(fetchImpl, baseUrl, form, consentTexts) {
   const response = await fetchImpl(`${baseUrl}/sws/go/session/register`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(withHubSpotContext(form)),
+    body: JSON.stringify(withHubSpotContext(form, consentTexts)),
   });
   return readJsonResponse(response, ONBOARDING_ERROR_CODES.registerFailed);
 }
@@ -267,7 +285,7 @@ export async function loginWithSsoProvider(fetchImpl, baseUrl, provider, payload
       ...buildPayload(payload),
       ...(extra.termsVersion ? { termsVersion: extra.termsVersion } : {}),
       ...(typeof extra.marketingConsent === 'boolean' ? { marketingConsent: extra.marketingConsent } : {}),
-    })),
+    }, extra.consentTexts)),
   });
   return readJsonResponse(response, ONBOARDING_ERROR_CODES.ssoFailed);
 }
