@@ -1233,6 +1233,21 @@ describe('rollup — merge, then score', () => {
     rmSync(join(other, 'Uses.java'));
   });
 
+  it('charges no touch point for a retired flag, even with contribution symbols', () => {
+    writeFileSync(join(other, 'Uses.java'), 'class Uses { PaywallServiceOnly p; }\n');
+    const retiredHeader = { ...header(), flag: null, key: null, symbols: [] };
+    const own = normalizeFeature({
+      id: 'tenant-upgrade-feature', contribution: true, symbols: ['PaywallServiceOnly'], paths: [],
+    });
+    const merged = mergeRegistries([
+      { source: sourceOf('repo', root), registry: { features: [retiredHeader] } },
+      { source: sourceOf('backend', other), registry: { features: [own] } },
+    ]).features[0];
+    const touch = collectTouchPoints(merged, { ...context(), sources: undefined });
+    assert.equal(touch.files.length, 0);
+    rmSync(join(other, 'Uses.java'));
+  });
+
   it('charges a flat spec penalty once, not once per repo', () => {
     const missing = { unit: [{ path: 'src-test/NopeTest.java', expected: true }], e2e: [] };
     const { features } = rollup(missing);
@@ -1412,6 +1427,7 @@ describe('the CLI --rollup', () => {
     assert.deepEqual(options.rollup, ['/a/r.json', '/b/r.json']);
     assert.equal(options.json, true);
     assert.throws(() => parseArgs(['--rollup']), /needs at least one registry/);
+    assert.throws(() => parseArgs(['--rollup=/a/r.json']), /space-separated/);
   });
 
   it('merges by id, flags the orphan, and reports the absent checkout', () => {

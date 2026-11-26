@@ -521,7 +521,8 @@ export function collectTouchPoints(flag, context) {
     // The header's symbols are searched everywhere; a contribution's own symbols
     // only in its own checkout, so a backend class name quoted in the frontend is
     // not charged as a frontend touch point.
-    const symbols = unique([...(flag.headerSymbols || []), ...part.symbols]);
+    // A retired flag (no live key) has nothing left to remove, so no symbol is charged.
+    const symbols = flag.key ? unique([...(flag.headerSymbols || []), ...part.symbols]) : [];
     const specPaths = specsOf(part).map((spec) => spec.path);
 
     // Checkouts can nest; a file under the inner one must not be visited a
@@ -1494,6 +1495,7 @@ function readRollupArg(argv, index, options) {
 function readValueArg(argv, index, options) {
   const arg = argv[index];
   if (arg === '--rollup') return readRollupArg(argv, index, options);
+  if (arg.startsWith('--rollup=')) throw new Error('--rollup takes space-separated paths (--rollup a.json b.json), not --rollup=');
   const inline = arg.indexOf('=');
   if (inline !== -1) {
     const spec = VALUE_ARGS.get(arg.slice(0, inline));
