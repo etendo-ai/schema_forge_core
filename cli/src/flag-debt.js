@@ -593,6 +593,27 @@ function specsOf(part) {
 }
 
 /**
+ * Resolves one declared spec against its own checkout.
+ * Defensive path: a rollup never loads an absent registry, so a rootless source only
+ * reaches here from a hand-built fixture; the rollup reports absent checkouts through
+ * issues.unverifiable instead.
+ */
+function checkSpec(spec, source) {
+  const unverifiable = !source.root;
+  const exists = unverifiable ? false : isFile(path.join(source.root, spec.path));
+  const status = unverifiable ? 'unverifiable' : specStatus(spec, exists);
+  return {
+    ...spec,
+    source: source.name,
+    exists,
+    status,
+    unverifiable,
+    // A declared note wins over the status default.
+    note: exists ? null : (spec.note || DEFAULT_SPEC_NOTE[status]),
+  };
+}
+
+/**
  * Scores the declared specs over ALL of a feature's slices at once: the flat
  * penalty is per feature and kind, so a feature split across repos pays it once.
  * A spec in a checkout that is not on this machine is `unverifiable` — listed,
@@ -605,24 +626,7 @@ export function checkTestSpecs(flag, context) {
 
   for (const [kind, penalty] of Object.entries(kinds)) {
     const checked = parts.flatMap((part) => ((part.testSpecs || {})[kind] || [])
-      .map(normalizeSpec)
-      .map((spec) => {
-        const { source } = part;
-        const exists = source.root ? isFile(path.join(source.root, spec.path)) : false;
-        // Defensive path: a rollup never loads an absent registry, so its specs never get here;
-        // the rollup reports absent checkouts through issues.unverifiable instead.
-        const unverifiable = !source.root;
-        const status = unverifiable ? 'unverifiable' : specStatus(spec, exists);
-        return {
-          ...spec,
-          source: source.name,
-          exists,
-          status,
-          unverifiable,
-          // A declared note wins over the status default.
-          note: exists ? null : (spec.note || DEFAULT_SPEC_NOTE[status]),
-        };
-      }));
+      .map((spec) => checkSpec(normalizeSpec(spec), part.source)));
     const missing = checked.filter((spec) => !spec.exists && !spec.unverifiable);
     const unverifiable = checked.filter((spec) => spec.unverifiable);
     const acceptedDebt = missing.filter((spec) => spec.status === 'accepted-debt');
