@@ -645,6 +645,11 @@ export function generateFrontendContract(schema, rules = []) {
 const IMPORT_CELL_STRING_TYPES = new Set(['string', 'text']);
 const IMPORT_CELL_KEYS = ['maxLength', 'minLength', 'format', 'allowedSchemes'];
 
+/**
+ * The subset of an entity field's `validation` that applies to the raw import cell.
+ * @param {{type?: string, validation?: object}} field entity field from the contract.
+ * @returns {{validation?: object}} `{ validation }` with the text constraints, or `{}` when none apply.
+ */
 export function importCellValidation(field) {
   if (!field?.validation || !IMPORT_CELL_STRING_TYPES.has(field.type)) return {};
   const picked = {};
