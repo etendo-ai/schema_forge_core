@@ -33,6 +33,11 @@
  * Remote configuration (`remoteConfigurationId`) is off unless the host passes an id: from
  * the Datadog UI it can change the privacy level, the tracing URLs and the user/global
  * context, outside code review. `beforeSend` still applies to everything it produces.
+ *
+ * An unhandled error whose rejection reason is not an `Error` reaches Datadog with no message
+ * or stack, so `beforeSend` also reads the SDK's domain context (`context.error`, the original
+ * reason) and tags the event with `unhandled_reason_type` (and the `Error` name, when it is
+ * well formed). Only a closed vocabulary is ever sent, never the reason's values or keys.
  */
 import { normalizeRoute, resolveTrustedKeys, sanitizeStack, sanitizeValue } from '../sanitize.js';
 import { safeWarn } from './shared.js';
@@ -46,6 +51,7 @@ export const DATADOG_FEATURE_FLAG_EVENTS = ['vital', 'action', 'long_task', 'res
 // Flag evaluations made before init() (the flag provider usually answers first) are replayed
 // once the SDK is up; bounded so a misbehaving caller cannot grow it without limit.
 const MAX_PENDING_FLAG_EVALUATIONS = 100;
+const SAFE_ERROR_NAME = /^[A-Za-z][A-Za-z0-9]{0,40}$/;
 
 /** A 0–100 sample rate; anything unparseable falls back to the default. */
 export function boundedSampleRate(value, fallback) {
@@ -202,6 +208,35 @@ export function sanitizeDatadogEvent(event, policy = {}) {
 }
 
 /**
+ * Classifies a rejection reason with a closed vocabulary. Never returns values, messages or
+ * key names of the reason, which could carry customer data.
+ * @param {unknown} reason The original reason of an unhandled rejection.
+ * @returns {{type: string, name?: string}} `type` is one of a fixed set of words; `name` is
+ *   present only for an `Error` whose name is a plain identifier.
+ */
+export function describeRejectionReason(reason) {
+  if (reason === null) return { type: 'null' };
+  if (typeof reason !== 'object') return { type: typeof reason };
+  // The toString check covers errors from another realm (an iframe, a third-party script).
+  if (reason instanceof Error || Object.prototype.toString.call(reason) === '[object Error]') {
+    const name = reason.name;
+    return typeof name === 'string' && SAFE_ERROR_NAME.test(name) ? { type: 'error', name } : { type: 'error' };
+  }
+  if (typeof reason.status === 'number' && typeof reason.ok === 'boolean') return { type: 'response' };
+  if (typeof Event !== 'undefined' && reason instanceof Event) return { type: 'event' };
+  return { type: Array.isArray(reason) ? 'array' : 'object' };
+}
+
+/** Never throws: a hostile reason (throwing getter, revoked Proxy) must not cost the event. */
+function safeDescribeRejectionReason(reason) {
+  try {
+    return describeRejectionReason(reason);
+  } catch {
+    return { type: 'unknown' };
+  }
+}
+
+/**
  * @param {object} options
  * @param {() => Promise<{datadogRum: object, reactPlugin?: Function}>} options.loadSdk
  *   Lazy loader for the injected SDK modules.
@@ -265,9 +300,14 @@ export function createDatadogAdapter({
 
   // Sanitizes before deciding: a view is sent even when this returns false (the SDK cannot
   // drop views), so the one that ends with a kill must be clean too.
-  function beforeSend(event) {
+  function beforeSend(event, domainContext) {
     try {
       sanitizeDatadogEvent(event, policy);
+      if (event.type === 'error' && event.error?.handling === 'unhandled' && domainContext && 'error' in domainContext) {
+        const { type, name } = safeDescribeRejectionReason(domainContext.error);
+        event.context = { ...event.context, unhandled_reason_type: type };
+        if (name) event.context.unhandled_reason_name = name;
+      }
       if (event.type === 'error' && hasUnsafeCauses(event, options)) return false;
       return !stopped;
     } catch (error) {

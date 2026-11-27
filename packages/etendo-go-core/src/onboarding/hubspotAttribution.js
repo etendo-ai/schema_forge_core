@@ -6,6 +6,10 @@
  * The register and single sign-on requests carry it to the backend, which keeps it with the new
  * account and sends it to HubSpot's Forms API once the address is confirmed.
  *
+ * The campaign parameters (`utm_*`, `gclid`…) are only in the address the visitor landed on, and
+ * the app's redirect to `/onboarding` drops them: the app keeps that landing page on its first load
+ * ({@link captureLandingAttribution}) and the sign-up sends it as the page.
+ *
  * Nothing here may block a sign-up: a visitor who refused the cookies has no `hubspotutk`, and the
  * account is created all the same, only without attribution.
  */
@@ -73,10 +77,74 @@ export function attributionPageUri(href) {
   return uri.length > MAX_PAGE_URI ? `${url.origin}${url.pathname}`.slice(0, MAX_PAGE_URI) : uri;
 }
 
+/** Where the landing page of the tab's first visit with campaign parameters is kept. */
+export const LANDING_STORAGE_KEY = 'etendo_attr';
+
+function sessionStorageOf(win) {
+  try {
+    return win?.sessionStorage ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function hasAttributionParams(href) {
+  try {
+    return [...new URL(href).searchParams.keys()].some(isAttributionParam);
+  } catch {
+    return false;
+  }
+}
+
 /**
- * What the register and single sign-on requests send as `hubspotContext`.
+ * Keeps the page the visitor landed on when it carries campaign parameters, before the app
+ * redirects (`/` to `/onboarding`) and the address loses them. Call it once, before the router
+ * mounts. Only the first one of the tab is kept, and only as {@link attributionPageUri} leaves it:
+ * no personal data and no token. `sessionStorage` survives a single sign-on, which returns to the
+ * same tab.
  *
- * @param {{ cookie?: string, href?: string, title?: string }} [source] the browser's, by default
+ * @param {Window} [win] the browser's, by default
+ * @returns {boolean} whether a landing page was stored
+ */
+export function captureLandingAttribution(win = typeof window === 'undefined' ? null : window) {
+  const storage = sessionStorageOf(win);
+  const href = win?.location?.href;
+  if (!storage || !href || !hasAttributionParams(href)) return false;
+  try {
+    if (storage.getItem(LANDING_STORAGE_KEY)) return false;
+    const landing = attributionPageUri(href);
+    if (!landing) return false;
+    storage.setItem(LANDING_STORAGE_KEY, JSON.stringify({ landing }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The landing page {@link captureLandingAttribution} kept, if any.
+ *
+ * @param {Window} [win] the browser's, by default
+ * @returns {string|null}
+ */
+export function storedLandingPage(win = typeof window === 'undefined' ? null : window) {
+  const storage = sessionStorageOf(win);
+  if (!storage) return null;
+  try {
+    const landing = JSON.parse(storage.getItem(LANDING_STORAGE_KEY) || 'null')?.landing;
+    return typeof landing === 'string' ? attributionPageUri(landing) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * What the register and single sign-on requests send as `hubspotContext`. The page is the landing
+ * page kept on the first load when there is one, so the campaign parameters the redirect dropped
+ * still reach HubSpot; the current address otherwise.
+ *
+ * @param {{ cookie?: string, href?: string, title?: string, landing?: string|null }} [source] the
+ *   browser's, by default
  * @returns {{ hutk?: string, pageUri?: string, pageName?: string }|null} null when there is
  *   nothing to send (no browser)
  */
@@ -86,10 +154,11 @@ export function readHubSpotContext(source) {
   const cookie = source?.cookie ?? doc?.cookie ?? '';
   const href = source?.href ?? win?.location?.href ?? '';
   const title = source?.title ?? doc?.title ?? '';
+  const landing = source && 'landing' in source ? source.landing : storedLandingPage(win);
   const context = {};
   const hutk = readCookie(cookie, 'hubspotutk');
   if (hutk && HUTK_PATTERN.test(hutk)) context.hutk = hutk.toLowerCase();
-  const pageUri = href ? attributionPageUri(href) : null;
+  const pageUri = landing || (href ? attributionPageUri(href) : null);
   if (pageUri) context.pageUri = pageUri;
   const pageName = typeof title === 'string' ? title.trim().slice(0, MAX_PAGE_NAME) : '';
   if (pageName) context.pageName = pageName;

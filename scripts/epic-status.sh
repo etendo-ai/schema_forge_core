@@ -21,8 +21,8 @@ for cmd in jira gh jq; do
 done
 
 REPOS=(
-  "etendosoftware/etendo_schema_forge"
-  "etendosoftware/com.etendoerp.go"
+  "etendo-ai/etendo_schema_forge"
+  "etendo-ai/com.etendoerp.go"
 )
 
 # Colors
@@ -42,7 +42,7 @@ trap 'rm -f "$PR_CACHE"' EXIT
 
 echo '[]' > "$PR_CACHE"
 for REPO in "${REPOS[@]}"; do
-  SHORT="${REPO#etendosoftware/}"
+  SHORT="${REPO#etendo-ai/}"
   gh pr list --repo "$REPO" --state all --limit 200 \
     --json headRefName,number,state 2>/dev/null | \
     jq --arg repo "$SHORT" '[.[] | {branch: .headRefName, pr: ("#" + (.number|tostring)), state: .state, repo: $repo}]' \
@@ -58,7 +58,7 @@ trap 'rm -f "$PR_CACHE" "$BRANCHES_CACHE"' EXIT
 
 echo '[]' > "$BRANCHES_CACHE"
 for REPO in "${REPOS[@]}"; do
-  SHORT="${REPO#etendosoftware/}"
+  SHORT="${REPO#etendo-ai/}"
   gh api "repos/${REPO}/git/matching-refs/heads/feature/" \
     --jq '[.[].ref | sub("^refs/heads/"; "")]' 2>/dev/null \
     > "${BRANCHES_CACHE}.part" || echo '[]' > "${BRANCHES_CACHE}.part"
