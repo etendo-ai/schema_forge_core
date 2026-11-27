@@ -95,6 +95,19 @@ describe('onboarding session API — identity cluster (ETP-4576)', () => {
       });
     });
 
+    it('carries the consent texts the visitor was shown, even without attribution (ETP-6363)', async () => {
+      const { calls, fetchImpl } = recordingFetch(jsonResponse({ token: 'new-account' }));
+
+      await registerAccount(fetchImpl, '/etendo', { email: 'ada@example.com' }, {
+        consentText: ' By creating your account, you accept the Terms and Conditions. ',
+        communicationsText: '',
+      });
+
+      assert.deepEqual(JSON.parse(calls[0].options.body).hubspotContext, {
+        consentText: 'By creating your account, you accept the Terms and Conditions.',
+      });
+    });
+
     it('throws with the registerFailed code on an HTTP error', async () => {
       const { fetchImpl } = recordingFetch(
         jsonResponse({ error: { message: 'boom' } }, { ok: false, status: 400 }),

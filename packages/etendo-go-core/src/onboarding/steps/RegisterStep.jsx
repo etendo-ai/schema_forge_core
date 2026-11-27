@@ -31,6 +31,13 @@ import { toDisplayNamesLocale } from '../countries.js';
 
 export const MARKETING_CONSENT_DEFAULT = true;
 
+/** ETP-6363 — the privacy policy the sign-up notice links to: the website's legal page. */
+export const PRIVACY_POLICY_URL = 'https://etendo.ai/aviso-legal/#privacidad';
+
+/** The notice below the form, in order: its text is these keys joined (see the JSX below). */
+const TERMS_NOTICE_KEYS = ['onboardingTermsNoticePrefix', 'onboardingTermsLink',
+  'onboardingTermsNoticeMiddle', 'onboardingPrivacyLink', 'onboardingTermsNoticeSuffix'];
+
 const AUTH_FEATURE_KEYS = ['onboardingAuthFeatureNoCard', 'onboardingAuthFeatureTrial', 'onboardingAuthFeatureInstantAccess'];
 
 export function RegisterStep({ config, stepData, onNext, onBack, goToStep, setToken, setAccountName, setCapabilities, handleRegisterSuccess, initialName, initialEmail, emailReadOnly = false, registerHandler, onRegistered, askPhone = true, askPassword = false, askMarketingConsent = askPhone, askSector = askPhone, askCountry = askPhone }) {
@@ -78,6 +85,12 @@ export function RegisterStep({ config, stepData, onNext, onBack, goToStep, setTo
   // ETP-6081 — consent to promotional mail, ticked by default and untickable inside the terms
   // dialog. Sent only when asked (not to an invitee, for the same reason as the phone).
   const [marketingConsent, setMarketingConsent] = useState(MARKETING_CONSENT_DEFAULT);
+  // ETP-6363 — the texts HubSpot records as the proof of the consent, exactly as on screen: the
+  // notice below the form and, when it is asked, the label of the promotional-mail checkbox.
+  const consentTexts = useMemo(() => ({
+    consentText: TERMS_NOTICE_KEYS.map(key => ui(key)).join(''),
+    ...(askMarketingConsent ? { communicationsText: ui('onboardingMarketingConsent') } : {}),
+  }), [ui, askMarketingConsent]);
   const termsLanguage = locale || config.defaultForm?.language || '';
 
   const loadTerms = useCallback(async () => {
@@ -133,6 +146,7 @@ export function RegisterStep({ config, stepData, onNext, onBack, goToStep, setTo
       const data = await loginWithSsoProvider(fetch, apiBase, provider, payload, {
         termsVersion,
         ...(askMarketingConsent ? { marketingConsent } : {}),
+        consentTexts,
       });
       // Either credential counts, same as the password-registration path below:
       // gating on csrfToken alone made a bearer SSO registration report failure.
@@ -166,7 +180,7 @@ export function RegisterStep({ config, stepData, onNext, onBack, goToStep, setTo
     } finally {
       setSsoLoadingProvider(null);
     }
-  }, [handleAuthSuccess, ui, apiBase, config, termsVersion, askMarketingConsent, marketingConsent]);
+  }, [handleAuthSuccess, ui, apiBase, config, termsVersion, askMarketingConsent, marketingConsent, consentTexts]);
 
   useEffect(() => {
     if (!registerSsoButtonRef.current || !SSO_PROVIDERS.length) {
@@ -228,7 +242,7 @@ export function RegisterStep({ config, stepData, onNext, onBack, goToStep, setTo
           ...countryField,
           ...marketingConsentField,
           language: locale || config.defaultForm?.language || '',
-        });
+        }, consentTexts);
       // ETP-4576 — a credential of EITHER kind marks an authenticated response.
       //
       // `/sws/go/session/register` sets the `__Host-` cookie and answers with
@@ -543,6 +557,16 @@ export function RegisterStep({ config, stepData, onNext, onBack, goToStep, setTo
           data-testid="register-terms-link">
           {ui('onboardingTermsLink')}
         </button>
+        {ui('onboardingTermsNoticeMiddle')}
+        {/* ETP-6363 — marketing's notice: the privacy policy is the website's, not a document of the app. */}
+        <a
+          href={PRIVACY_POLICY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-slate-900 underline underline-offset-2 hover:text-slate-700"
+          data-testid="register-privacy-link">
+          {ui('onboardingPrivacyLink')}
+        </a>
         {ui('onboardingTermsNoticeSuffix')}
       </p>
       <TermsDialog
