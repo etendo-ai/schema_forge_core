@@ -132,6 +132,14 @@ describe('validateRow — ETP-4996: numeric format, descriptor errors, i18n', ()
 });
 
 describe('validateRow phoneTargets (ETP-6225)', () => {
+  it('gives the phone error the engine code (MAX_LENGTH over 15, INVALID_FORMAT for charset)', () => {
+    const long = validateRow({ phone: '1234567890123456' }, { phoneTargets: ['phone'] }).errors[0];
+    assert.equal(long.code, 'MAX_LENGTH');
+    assert.equal(long.max, 15);
+    const chars = validateRow({ phone: '91abc' }, { phoneTargets: ['phone'] }).errors[0];
+    assert.equal(chars.code, 'INVALID_FORMAT');
+    assert.equal(chars.format, 'phone');
+  });
   it('marks the phone column for an invalid phone', () => {
     const result = validateRow({ phone: "'+34 910" }, { phoneTargets: ['phone'] });
     assert.equal(result.valid, false);

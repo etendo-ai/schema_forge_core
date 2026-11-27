@@ -1,7 +1,7 @@
 import { isInvalidImportNumber } from './parseImportNumber.js';
-import { isInvalidPhone } from './normalizePhone.js';
+import { isInvalidPhone, normalizePhone, PHONE_MAX_LENGTH } from './normalizePhone.js';
 
-import { validateRecord, inferFormatConstraints, describeValidationError } from '../validation/index.js';
+import { validateRecord, inferFormatConstraints, describeValidationError, ERROR_CODES } from '../validation/index.js';
 
 function isBlank(value) {
   return value == null || String(value).trim() === '';
@@ -133,7 +133,16 @@ export function validateRow(row, {
 
   for (const target of phoneTargets) {
     if (isInvalidPhone(row[target])) {
-      errors.push({ target, message: message('importErrorInvalidPhone', {}, translate) });
+      // Same engine code as the form and grid: too long -> MAX_LENGTH (normalised length), else a
+      // charset failure -> INVALID_FORMAT/phone.
+      const normalized = String(normalizePhone(row[target]));
+      const tooLong = normalized.length > PHONE_MAX_LENGTH;
+      errors.push({
+        target,
+        code: tooLong ? ERROR_CODES.MAX_LENGTH : ERROR_CODES.INVALID_FORMAT,
+        ...(tooLong ? { max: PHONE_MAX_LENGTH } : { format: 'phone' }),
+        message: message('importErrorInvalidPhone', {}, translate),
+      });
     }
   }
 
