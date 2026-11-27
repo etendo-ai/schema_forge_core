@@ -70,6 +70,9 @@ function collectConstraintErrors(row, { emailTargets, phoneTargets, fieldConstra
   ]);
   const fields = [...constraintTargets].map((target) => {
     const { required: _required, ...declared } = fieldConstraints[target] ?? {};
+    // A phone cell is normalised before it is sent (spaces stripped) and `isInvalidPhone` owns its
+    // length, so the declared length (which describes the stored value) must not hit the raw cell.
+    if (phoneTargets.includes(target)) { delete declared.maxLength; delete declared.minLength; }
     const identity = { key: target, ...(fieldIdentities[target] ?? {}) };
     // phoneTargets keep their own normalising check (one error per problem): no inference there.
     const inferred = target in fieldIdentities && !phoneTargets.includes(target) ? inferFormatConstraints(identity) : null;

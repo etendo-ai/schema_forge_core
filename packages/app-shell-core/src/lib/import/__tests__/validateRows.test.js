@@ -195,4 +195,10 @@ describe('validateRow — one error per problem (ETP-4557)', () => {
     assert.equal(r.errors.length, 1);
     assert.equal(r.errors[0].target, 'phone');
   });
+
+  it('a spaced phone longer than its declared maxLength raw but valid once normalised passes', () => {
+    const opts = { phoneTargets: ['phone'], fieldConstraints: { phone: { maxLength: 15 } } };
+    assert.deepEqual(validateRow({ phone: '+34 910 56 54 00' }, opts).errors, []);
+    assert.equal(validateRow({ phone: '1234567890123456' }, opts).errors.length, 1);
+  });
 });
