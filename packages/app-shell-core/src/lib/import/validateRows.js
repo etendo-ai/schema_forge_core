@@ -97,14 +97,21 @@ export function validateRow(row, {
     const { required: _required, ...declared } = fieldConstraints[target] ?? {};
     const identity = { key: target, ...(fieldIdentities[target] ?? {}) };
     // phoneTargets keep their own normalising check (one error per problem): no inference there.
-    let inferred = target in fieldIdentities && !phoneTargets.includes(target) ? inferFormatConstraints(identity) : null;
-    // A website cell is a bare host ("acme.com"); the descriptor adds the scheme before sending, so
-    // the strict https URL rule applies to the form's prefixed input, not to the raw import cell.
-    if (inferred?.format === 'url') inferred = null;
+    const inferred = target in fieldIdentities && !phoneTargets.includes(target) ? inferFormatConstraints(identity) : null;
     const base = emailTargets.includes(target) ? { format: 'email' } : (inferred ?? {});
     return { name: target, validation: { ...base, ...declared } };
   });
-  const result = validateRecord({ fields, values: row, operation: 'update' });
+  // A website cell is a bare host ("acme.com") and the descriptor adds the scheme before sending,
+  // exactly like the form's `inputPrefix`: prepend it here so the engine `url` rule decides.
+  const values = { ...row };
+  for (const field of fields) {
+    const { format, allowedSchemes } = field.validation;
+    const cell = row[field.name];
+    if (format === 'url' && !isBlank(cell) && !/^[a-z][a-z0-9+.-]*:\/\//i.test(String(cell).trim())) {
+      values[field.name] = `${allowedSchemes?.[0] ?? 'https'}://${String(cell).trim()}`;
+    }
+  }
+  const result = validateRecord({ fields, values, operation: 'update' });
   for (const field of fields) {
     for (const error of result.errors[field.name] ?? []) {
       errors.push({ target: field.name, code: error.code, message: constraintMessage(error, translate) });

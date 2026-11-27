@@ -170,13 +170,14 @@ describe('validateRow — declarative field constraints (ETP-4557)', () => {
 
 describe('validateRow — shared format inference (ETP-4557)', () => {
   const ids = { website: { type: 'text' }, phone: { type: 'text' }, etgoEmail: { type: 'text' } };
-  it('infers phone and email from the field identity with the engine codes (website cells are bare hosts)', () => {
-    const r = validateRow({ website: 'https://asda', phone: 'abc', etgoEmail: 'bad' }, { fieldIdentities: ids });
+  it('infers website, phone and email from the field identity with the engine codes', () => {
+    const r = validateRow({ website: 'asda', phone: 'abc', etgoEmail: 'bad' }, { fieldIdentities: ids });
     assert.deepEqual([...new Set(r.errors.map((e) => `${e.target}:${e.code}`))].sort(), [
-      'etgoEmail:INVALID_FORMAT', 'phone:INVALID_FORMAT',
+      'etgoEmail:INVALID_FORMAT', 'phone:INVALID_FORMAT', 'website:INVALID_FORMAT',
     ]);
-    // A bare host is a valid website CELL (the descriptor prefixes the scheme).
+    // A bare host is a valid website CELL: the scheme is prepended like the form's inputPrefix.
     assert.equal(validateRow({ website: 'acme.com' }, { fieldIdentities: ids }).valid, true);
+    assert.equal(validateRow({ website: 'http://acme.com' }, { fieldIdentities: ids }).valid, false);
   });
   it('accepts valid website/phone and lets a declared format win', () => {
     assert.equal(validateRow({ website: 'https://acme.com', phone: '+34 910 565 400' }, { fieldIdentities: ids }).valid, true);
@@ -184,7 +185,7 @@ describe('validateRow — shared format inference (ETP-4557)', () => {
     assert.deepEqual(r.errors.map((e) => e.code), ['MAX_LENGTH']);
   });
   it('without identities nothing is inferred (legacy callers unchanged)', () => {
-    assert.equal(validateRow({ website: 'https://asda' }, {}).valid, true);
+    assert.equal(validateRow({ website: 'asda' }, {}).valid, true);
   });
 });
 
