@@ -26,4 +26,11 @@ describe('format: url requires a domain-shaped host (ETP-4557)', () => {
     assert.equal(check('mailto:someone@acme.com'), false);
     assert.equal(check('not a url'), false);
   });
+  it('rejects out-of-range IPv4 octets', () => {
+    assert.equal(check('https://999.999.999.999'), false);
+    assert.equal(check('https://255.255.255.255'), true);
+  });
+  it('accepts one trailing dot on a fully qualified hostname', () => {
+    assert.equal(check('https://acme.com.'), true);
+  });
 });

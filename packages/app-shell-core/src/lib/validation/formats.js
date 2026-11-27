@@ -47,9 +47,11 @@ export const FORMAT_VALIDATORS = Object.freeze({
 const DOMAIN_LABEL_RE = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/i;
 const TLD_RE = /^[a-z]{2,}$/i;
 const IPV4_RE = /^\d{1,3}(\.\d{1,3}){3}$/;
+const isIpv4 = (host) => IPV4_RE.test(host) && host.split('.').every((octet) => Number(octet) <= 255);
 
-function hasDomainShapedHost(hostname) {
-  if (IPV4_RE.test(hostname)) return true;
+function hasDomainShapedHost(rawHostname) {
+  const hostname = rawHostname.endsWith('.') ? rawHostname.slice(0, -1) : rawHostname;
+  if (isIpv4(hostname)) return true;
   const labels = hostname.split('.');
   if (labels.length < 2) return false;
   if (!TLD_RE.test(labels[labels.length - 1]) && !labels[labels.length - 1].startsWith('xn--')) return false;

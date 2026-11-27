@@ -54,36 +54,11 @@ function constraintMessage(error, translate) {
 }
 
 /**
- * Validate a single row against a window's required fields, email-format
- * fields, numeric fields, and already-resolved foreign-key columns. Pure and
- * single-row so the same function powers both the bulk pre-send pass and the
- * review queue's inline "re-validate after edit" action.
- *
- * `numericTargets` exists so a malformed amount is caught HERE, in the review queue,
- * instead of at operation-build time: a price cell reading "abc" used to sit in the
- * Correctas tab until the user confirmed the import, and only then failed the row.
- * A blank numeric cell is valid — see `parseImportNumber`.
+ * Email format and any declared per-target `validation` (maxLength, minimum, ...) decided by the
+ * shared declarative engine. Extracted from `validateRow` to keep its complexity bounded.
  */
-export function validateRow(row, {
-  requiredTargets = [],
-  emailTargets = [],
-  numericTargets = [],
-  phoneTargets = [],
-  fieldConstraints = {},
-  fieldIdentities = {},
-  fkTargets = [],
-  fkResolutions = new Map(),
-  extraErrors = [],
-  translate,
-} = {}) {
+function collectConstraintErrors(row, { emailTargets, phoneTargets, fieldConstraints, fieldIdentities, translate }) {
   const errors = [];
-
-  for (const target of requiredTargets) {
-    if (isBlank(row[target])) {
-      errors.push({ target, message: message('importErrorRequiredGeneric', {}, translate) });
-    }
-  }
-
   // ETP-4557: email format and any declared per-target `validation` (maxLength, minimum, …)
   // are decided by the shared declarative engine, never by a flow-local regex. `required` stays
   // above (blank-cell semantics shared with the review queue). Empty values are valid.
@@ -117,6 +92,41 @@ export function validateRow(row, {
       errors.push({ target: field.name, code: error.code, message: constraintMessage(error, translate) });
     }
   }
+  return errors;
+}
+
+/**
+ * Validate a single row against a window's required fields, email-format
+ * fields, numeric fields, and already-resolved foreign-key columns. Pure and
+ * single-row so the same function powers both the bulk pre-send pass and the
+ * review queue's inline "re-validate after edit" action.
+ *
+ * `numericTargets` exists so a malformed amount is caught HERE, in the review queue,
+ * instead of at operation-build time: a price cell reading "abc" used to sit in the
+ * Correctas tab until the user confirmed the import, and only then failed the row.
+ * A blank numeric cell is valid — see `parseImportNumber`.
+ */
+export function validateRow(row, {
+  requiredTargets = [],
+  emailTargets = [],
+  numericTargets = [],
+  phoneTargets = [],
+  fieldConstraints = {},
+  fieldIdentities = {},
+  fkTargets = [],
+  fkResolutions = new Map(),
+  extraErrors = [],
+  translate,
+} = {}) {
+  const errors = [];
+
+  for (const target of requiredTargets) {
+    if (isBlank(row[target])) {
+      errors.push({ target, message: message('importErrorRequiredGeneric', {}, translate) });
+    }
+  }
+
+  errors.push(...collectConstraintErrors(row, { emailTargets, phoneTargets, fieldConstraints, fieldIdentities, translate }));
 
   for (const target of phoneTargets) {
     if (isInvalidPhone(row[target])) {
