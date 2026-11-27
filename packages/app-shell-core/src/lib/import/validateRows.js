@@ -1,7 +1,7 @@
 import { isInvalidImportNumber } from './parseImportNumber.js';
-import { isInvalidPhone } from './normalizePhone.js';
+import { isInvalidPhone, normalizePhone, PHONE_MAX_LENGTH } from './normalizePhone.js';
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { validateRecord, inferFormatConstraints, describeValidationError, ERROR_CODES } from '../validation/index.js';
 
 function isBlank(value) {
   return value == null || String(value).trim() === '';
@@ -21,6 +21,14 @@ const VALIDATION_FALLBACKS = {
   importErrorInvalidEmail: () => 'Not a valid email address.',
   importErrorInvalidPhone: () => 'The phone number can only contain digits and the + ( ) - . characters, up to 15 characters.',
   importErrorNotANumber: (p) => `"${p.value}" is not a valid number. Use 1234.56 or 1,234.56.`,
+  // ETP-4557 — same keys the forms and inline grids use for the same engine codes, so a value
+  // reads identically in every flow.
+  fieldMaxLengthError: (p) => `Maximum length is ${p.maxLength} characters`,
+  fieldMinLengthError: (p) => `Minimum length is ${p.minLength} characters`,
+  fieldMinValueError: (p) => `Value must be at least ${p.min}`,
+  fieldMaxValueError: (p) => `Value must be at most ${p.max}`,
+  fieldInvalidValue: () => 'The value is not valid.',
+  websiteInsecureUrl: () => 'Enter a valid secure URL.',
   importErrorFkUnmatched: (p) => `"${p.value}" could not be matched to an existing record.`,
 };
 
@@ -29,6 +37,76 @@ function message(key, params, translate) {
   if (typeof translate !== 'function') return fallback;
   const translated = translate(key, params);
   return translated && translated !== key ? translated : fallback;
+}
+
+const IMPORT_KEY_OVERRIDES = {
+  sendModalInvalidEmail: 'importErrorInvalidEmail',
+  phoneInvalidChars: 'importErrorInvalidPhone',
+};
+
+// Engine error → localized message through the shared mapper (same keys as form and grid).
+function constraintMessage(error, translate) {
+  const described = describeValidationError(error);
+  // Same code, same decision as the form; only the wording of two keys stays import-specific
+  // (already translated in every locale and referenced by the review queue's tests).
+  const key = IMPORT_KEY_OVERRIDES[described.key] ?? described.key;
+  return message(key, described.params, translate);
+}
+
+/**
+ * Email format and any declared per-target `validation` (maxLength, minimum, ...) decided by the
+ * shared declarative engine. Extracted from `validateRow` to keep its complexity bounded.
+ */
+function collectConstraintErrors(row, { emailTargets, phoneTargets, fieldConstraints, fieldIdentities, translate }) {
+  const errors = [];
+  // ETP-4557: email format and any declared per-target `validation` (maxLength, minimum, …)
+  // are decided by the shared declarative engine, never by a flow-local regex. `required` stays
+  // above (blank-cell semantics shared with the review queue). Empty values are valid.
+  // `fieldIdentities` carries `{ column, type }` per target so import infers email/website/phone
+  // from the field name exactly like the form and grid adapter do (compat inference, TEMPORARY
+  // until contracts declare `format`). An explicit declared constraint always wins.
+  const constraintTargets = new Set([
+    ...emailTargets, ...Object.keys(fieldConstraints), ...Object.keys(fieldIdentities),
+  ]);
+  const fields = [...constraintTargets].map((target) => {
+    const { required: _required, ...declared } = fieldConstraints[target] ?? {};
+    // A phone cell is normalised before it is sent (spaces stripped) and `isInvalidPhone` owns its
+    // length, so the declared length (which describes the stored value) must not hit the raw cell.
+    if (phoneTargets.includes(target)) { delete declared.maxLength; delete declared.minLength; }
+    const identity = { key: target, ...(fieldIdentities[target] ?? {}) };
+    // phoneTargets keep their own normalising check (one error per problem): no inference there.
+    const inferred = target in fieldIdentities && !phoneTargets.includes(target) ? inferFormatConstraints(identity) : null;
+    const base = emailTargets.includes(target) ? { format: 'email' } : (inferred ?? {});
+    return { name: target, validation: { ...base, ...declared } };
+  });
+  // A website cell is a bare host ("acme.com") and the descriptor adds the scheme before sending,
+  // exactly like the form's `inputPrefix`: prepend it here so the engine `url` rule decides.
+  const values = { ...row };
+  for (const field of fields) {
+    const { format, allowedSchemes } = field.validation;
+    const cell = row[field.name];
+    if (format === 'url' && !isBlank(cell) && !/^[a-z][a-z0-9+.-]*:\/\//i.test(String(cell).trim())) {
+      values[field.name] = `${allowedSchemes?.[0] ?? 'https'}://${String(cell).trim()}`;
+    }
+  }
+  const result = validateRecord({ fields, values, operation: 'update' });
+  for (const field of fields) {
+    for (const error of result.errors[field.name] ?? []) {
+      errors.push({ target: field.name, code: error.code, message: constraintMessage(error, translate) });
+    }
+  }
+  return errors;
+}
+
+/**
+ * Phone cell error carrying the same engine code the form and grid report: too long (normalised
+ * length) -> MAX_LENGTH, otherwise a charset failure -> INVALID_FORMAT/phone. Null when valid.
+ */
+function phoneErrorFor(target, value, translate) {
+  if (!isInvalidPhone(value)) return null;
+  const tooLong = String(normalizePhone(value)).length > PHONE_MAX_LENGTH;
+  const detail = tooLong ? { code: ERROR_CODES.MAX_LENGTH, max: PHONE_MAX_LENGTH } : { code: ERROR_CODES.INVALID_FORMAT, format: 'phone' };
+  return { target, ...detail, message: message('importErrorInvalidPhone', {}, translate) };
 }
 
 /**
@@ -47,6 +125,8 @@ export function validateRow(row, {
   emailTargets = [],
   numericTargets = [],
   phoneTargets = [],
+  fieldConstraints = {},
+  fieldIdentities = {},
   fkTargets = [],
   fkResolutions = new Map(),
   extraErrors = [],
@@ -60,17 +140,11 @@ export function validateRow(row, {
     }
   }
 
-  for (const target of emailTargets) {
-    const value = row[target];
-    if (!isBlank(value) && !EMAIL_RE.test(String(value).trim())) {
-      errors.push({ target, message: message('importErrorInvalidEmail', {}, translate) });
-    }
-  }
+  errors.push(...collectConstraintErrors(row, { emailTargets, phoneTargets, fieldConstraints, fieldIdentities, translate }));
 
   for (const target of phoneTargets) {
-    if (isInvalidPhone(row[target])) {
-      errors.push({ target, message: message('importErrorInvalidPhone', {}, translate) });
-    }
+    const phoneError = phoneErrorFor(target, row[target], translate);
+    if (phoneError) errors.push(phoneError);
   }
 
   for (const target of numericTargets) {

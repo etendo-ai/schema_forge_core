@@ -132,6 +132,14 @@ describe('validateRow — ETP-4996: numeric format, descriptor errors, i18n', ()
 });
 
 describe('validateRow phoneTargets (ETP-6225)', () => {
+  it('gives the phone error the engine code (MAX_LENGTH over 15, INVALID_FORMAT for charset)', () => {
+    const long = validateRow({ phone: '1234567890123456' }, { phoneTargets: ['phone'] }).errors[0];
+    assert.equal(long.code, 'MAX_LENGTH');
+    assert.equal(long.max, 15);
+    const chars = validateRow({ phone: '91abc' }, { phoneTargets: ['phone'] }).errors[0];
+    assert.equal(chars.code, 'INVALID_FORMAT');
+    assert.equal(chars.format, 'phone');
+  });
   it('marks the phone column for an invalid phone', () => {
     const result = validateRow({ phone: "'+34 910" }, { phoneTargets: ['phone'] });
     assert.equal(result.valid, false);
@@ -141,5 +149,64 @@ describe('validateRow phoneTargets (ETP-6225)', () => {
     for (const phone of ['+34 910 565 400', '653120012', '']) {
       assert.equal(validateRow({ phone }, { phoneTargets: ['phone'] }).valid, true, phone);
     }
+  });
+});
+
+describe('validateRow — declarative field constraints (ETP-4557)', () => {
+  it('flags maxLength with the engine code and a localizable message', () => {
+    const r = validateRow({ name: 'abcdef' }, { fieldConstraints: { name: { maxLength: 5 } } });
+    assert.equal(r.valid, false);
+    assert.equal(r.errors[0].target, 'name');
+    assert.equal(r.errors[0].code, 'MAX_LENGTH');
+    assert.equal(r.errors[0].message, 'Maximum length is 5 characters');
+  });
+  it('keeps optional empty values valid and reports several simultaneous errors', () => {
+    assert.equal(validateRow({ name: '' }, { fieldConstraints: { name: { maxLength: 5 } } }).valid, true);
+    const r = validateRow({ name: 'abcdef', qty: 0 }, { fieldConstraints: { name: { maxLength: 5 }, qty: { minimum: 1 } } });
+    assert.deepEqual(r.errors.map((e) => e.code), ['MAX_LENGTH', 'MINIMUM']);
+  });
+  it('uses the same email code as the engine', () => {
+    const r = validateRow({ e: 'bad' }, { emailTargets: ['e'] });
+    assert.equal(r.errors[0].code, 'INVALID_FORMAT');
+  });
+  it('re-validation after a correction clears the error', () => {
+    const opts = { fieldConstraints: { name: { maxLength: 5 } } };
+    assert.equal(validateRow({ name: 'abcdef' }, opts).valid, false);
+    assert.equal(validateRow({ name: 'abc' }, opts).valid, true);
+  });
+});
+
+describe('validateRow — shared format inference (ETP-4557)', () => {
+  const ids = { website: { type: 'text' }, phone: { type: 'text' }, etgoEmail: { type: 'text' } };
+  it('infers website, phone and email from the field identity with the engine codes', () => {
+    const r = validateRow({ website: 'asda', phone: 'abc', etgoEmail: 'bad' }, { fieldIdentities: ids });
+    assert.deepEqual([...new Set(r.errors.map((e) => `${e.target}:${e.code}`))].sort(), [
+      'etgoEmail:INVALID_FORMAT', 'phone:INVALID_FORMAT', 'website:INVALID_FORMAT',
+    ]);
+    // A bare host is a valid website CELL: the scheme is prepended like the form's inputPrefix.
+    assert.equal(validateRow({ website: 'acme.com' }, { fieldIdentities: ids }).valid, true);
+    assert.equal(validateRow({ website: 'http://acme.com' }, { fieldIdentities: ids }).valid, false);
+  });
+  it('accepts valid website/phone and lets a declared format win', () => {
+    assert.equal(validateRow({ website: 'https://acme.com', phone: '+34 910 565 400' }, { fieldIdentities: ids }).valid, true);
+    const r = validateRow({ website: 'https://acme.com' }, { fieldIdentities: ids, fieldConstraints: { website: { maxLength: 5 } } });
+    assert.deepEqual(r.errors.map((e) => e.code), ['MAX_LENGTH']);
+  });
+  it('without identities nothing is inferred (legacy callers unchanged)', () => {
+    assert.equal(validateRow({ website: 'asda' }, {}).valid, true);
+  });
+});
+
+describe('validateRow — one error per problem (ETP-4557)', () => {
+  it('a bad phone on an isPhone target yields exactly one error', () => {
+    const r = validateRow({ phone: 'abc' }, { phoneTargets: ['phone'], fieldIdentities: { phone: { type: 'text' } } });
+    assert.equal(r.errors.length, 1);
+    assert.equal(r.errors[0].target, 'phone');
+  });
+
+  it('a spaced phone longer than its declared maxLength raw but valid once normalised passes', () => {
+    const opts = { phoneTargets: ['phone'], fieldConstraints: { phone: { maxLength: 15 } } };
+    assert.deepEqual(validateRow({ phone: '+34 910 56 54 00' }, opts).errors, []);
+    assert.equal(validateRow({ phone: '1234567890123456' }, opts).errors.length, 1);
   });
 });
