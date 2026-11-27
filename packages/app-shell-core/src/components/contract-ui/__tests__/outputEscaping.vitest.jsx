@@ -1,3 +1,4 @@
+// @covers packages/app-shell-core/src/components/contract-ui/DistinctValuesList.jsx
 /**
  * ETP-4561 — characterization: record values (untrusted API/DB text) rendered by the
  * shared contract-ui option list and by plain JSX text/attributes appear as TEXT.

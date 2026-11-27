@@ -66,6 +66,9 @@ describe('ImportDialog', () => {
     const originalRevokeObjectURL = URL.revokeObjectURL;
     URL.createObjectURL = createObjectURLSpy;
     URL.revokeObjectURL = revokeObjectURLSpy;
+    // ETP-4561 (sink inventory row 9): the download anchor's href is only ever the app-created blob URL.
+    const clickedHrefs = [];
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () { clickedHrefs.push(this.href); });
     try {
       render(<ImportDialog open config={config} token="t" postBatch={vi.fn()} simSearchFn={vi.fn()} onImported={() => {}} />);
       const link = screen.getByTestId('ImportDialog__downloadTemplate');
@@ -73,7 +76,9 @@ describe('ImportDialog', () => {
       expect(createObjectURLSpy).toHaveBeenCalled();
       const blobArg = createObjectURLSpy.mock.calls[0][0];
       expect(blobArg.type).toBe('text/csv;charset=utf-8;');
+      expect(clickedHrefs).toEqual(['blob:mock-url']);
     } finally {
+      clickSpy.mockRestore();
       URL.createObjectURL = originalCreateObjectURL;
       URL.revokeObjectURL = originalRevokeObjectURL;
     }
