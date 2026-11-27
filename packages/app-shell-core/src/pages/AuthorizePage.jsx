@@ -21,8 +21,9 @@ function detectMcpUrl() {
   return mcpUrlFor(window.location.origin);
 }
 
-// http: stays allowed only because OAuth native/loopback clients redirect to
-// http://127.0.0.1:<port>/cb (RFC 8252); custom schemes cover MCP client deep links.
+// http: stays allowed because OAuth native/loopback clients redirect to
+// http://127.0.0.1:<port>/cb (RFC 8252); it is not restricted to loopback hosts here
+// (the server validates the registered redirect_uri). Custom schemes cover MCP client deep links.
 // javascript:/data:/etc. are always rejected by parseSafeUrl.
 const REDIRECT_POLICY = { allowedProtocols: ['https:', 'http:'], allowCustomSchemes: true };
 

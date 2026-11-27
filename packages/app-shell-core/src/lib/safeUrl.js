@@ -18,6 +18,38 @@ const DANGEROUS_PROTOCOLS = new Set(['javascript:', 'data:', 'vbscript:', 'file:
 const EDGE_JUNK = /^[\u0000- ]+|[\u0000- ]+$/g;
 
 /**
+ * Path-only branch. `//host` and `/\host` are protocol-relative, i.e. external.
+ * @param {string} raw trimmed input starting with `/` or `\`.
+ * @param {boolean} allowRelative whether same-origin paths are accepted at all.
+ * @returns {string|null} canonical path + query + hash, or null.
+ */
+function parseRelativeUrl(raw, allowRelative) {
+  // eslint-disable-next-line no-control-regex
+  if (!allowRelative || /^[/\\]{2}/.test(raw) || /[\u0000-\u001f]/.test(raw)) return null;
+  try {
+    const url = new URL(raw, 'https://relative.invalid');
+    return url.origin === 'https://relative.invalid' ? url.pathname + url.search + url.hash : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Policy checks on an absolute, already parsed URL.
+ * @param {URL} url
+ * @param {{allowedProtocols: string[], allowCustomSchemes: boolean, allowCredentials: boolean}} policy
+ * @returns {boolean}
+ */
+function isAcceptedUrl(url, { allowedProtocols, allowCustomSchemes, allowCredentials }) {
+  const protocol = url.protocol.toLowerCase();
+  if (DANGEROUS_PROTOCOLS.has(protocol)) return false;
+  if (!allowedProtocols.includes(protocol) && !allowCustomSchemes) return false;
+  if (!allowCredentials && (url.username || url.password)) return false;
+  const isWeb = protocol === 'http:' || protocol === 'https:';
+  return !isWeb || Boolean(url.hostname);
+}
+
+/**
  * Parse and canonicalize an untrusted URL against an explicit policy.
  *
  * @param {unknown} input
@@ -40,17 +72,7 @@ export function parseSafeUrl(input, options = {}) {
   const raw = input.replace(EDGE_JUNK, '');
   if (!raw) return null;
 
-  if (/^[/\\]/.test(raw)) {
-    // Path-only. `//host` and `/\host` are protocol-relative, i.e. external.
-    // eslint-disable-next-line no-control-regex
-    if (!allowRelative || /^[/\\]{2}/.test(raw) || /[\u0000-\u001f]/.test(raw)) return null;
-    try {
-      const url = new URL(raw, 'https://relative.invalid');
-      return url.origin === 'https://relative.invalid' ? url.pathname + url.search + url.hash : null;
-    } catch {
-      return null;
-    }
-  }
+  if (/^[/\\]/.test(raw)) return parseRelativeUrl(raw, allowRelative);
 
   let url;
   try {
@@ -58,12 +80,7 @@ export function parseSafeUrl(input, options = {}) {
   } catch {
     return null; // malformed, or a scheme-less value (encoded scheme, bare host)
   }
-  const protocol = url.protocol.toLowerCase();
-  if (DANGEROUS_PROTOCOLS.has(protocol)) return null;
-  if (!allowedProtocols.includes(protocol) && !allowCustomSchemes) return null;
-  if (!allowCredentials && (url.username || url.password)) return null;
-  if ((protocol === 'http:' || protocol === 'https:') && !url.hostname) return null;
-  return url.href;
+  return isAcceptedUrl(url, { allowedProtocols, allowCustomSchemes, allowCredentials }) ? url.href : null;
 }
 
 /**
