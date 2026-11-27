@@ -99,6 +99,17 @@ function collectConstraintErrors(row, { emailTargets, phoneTargets, fieldConstra
 }
 
 /**
+ * Phone cell error carrying the same engine code the form and grid report: too long (normalised
+ * length) -> MAX_LENGTH, otherwise a charset failure -> INVALID_FORMAT/phone. Null when valid.
+ */
+function phoneErrorFor(target, value, translate) {
+  if (!isInvalidPhone(value)) return null;
+  const tooLong = String(normalizePhone(value)).length > PHONE_MAX_LENGTH;
+  const detail = tooLong ? { code: ERROR_CODES.MAX_LENGTH, max: PHONE_MAX_LENGTH } : { code: ERROR_CODES.INVALID_FORMAT, format: 'phone' };
+  return { target, ...detail, message: message('importErrorInvalidPhone', {}, translate) };
+}
+
+/**
  * Validate a single row against a window's required fields, email-format
  * fields, numeric fields, and already-resolved foreign-key columns. Pure and
  * single-row so the same function powers both the bulk pre-send pass and the
@@ -132,18 +143,8 @@ export function validateRow(row, {
   errors.push(...collectConstraintErrors(row, { emailTargets, phoneTargets, fieldConstraints, fieldIdentities, translate }));
 
   for (const target of phoneTargets) {
-    if (isInvalidPhone(row[target])) {
-      // Same engine code as the form and grid: too long -> MAX_LENGTH (normalised length), else a
-      // charset failure -> INVALID_FORMAT/phone.
-      const normalized = String(normalizePhone(row[target]));
-      const tooLong = normalized.length > PHONE_MAX_LENGTH;
-      errors.push({
-        target,
-        code: tooLong ? ERROR_CODES.MAX_LENGTH : ERROR_CODES.INVALID_FORMAT,
-        ...(tooLong ? { max: PHONE_MAX_LENGTH } : { format: 'phone' }),
-        message: message('importErrorInvalidPhone', {}, translate),
-      });
-    }
+    const phoneError = phoneErrorFor(target, row[target], translate);
+    if (phoneError) errors.push(phoneError);
   }
 
   for (const target of numericTargets) {
