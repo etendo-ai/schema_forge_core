@@ -15,6 +15,11 @@ const identityFingerprint = (session) => {
   return JSON.stringify(identity);
 };
 
+const EMPTY_IDENTITY = identityFingerprint({});
+// Whether a session names someone. Deliberately not `token`: a cookie session (ETP-4576) never
+// carries a bearer, so a token test reads every cookie session as empty.
+const hasIdentity = (session) => identityFingerprint(session) !== EMPTY_IDENTITY;
+
 /** Synchronous authority for async work. React renders observe, never own, its generation. */
 export function createSessionController(initialSession, storage, onSessionChange, apiBaseUrl) {
   const listeners = new Set();
@@ -50,11 +55,13 @@ export function createSessionController(initialSession, storage, onSessionChange
   // Both branches go through `identityFingerprint`, which normalizes first, and every storage
   // adapter writes `normalizeAuthSession(session)` — so the fallback equals the stored identity
   // once written (covered for the memory and JSON-backed local adapters in sessionControllerRestore).
+  // "Populated" and "empty" are about identity, never the bearer: the cookie restore has no token,
+  // and gating this on one left the production case — every cookie session — unprotected.
   let restoredUnpersisted = false;
   const readStorageIdentity = () => {
     try {
       const stored = config.storage?.read();
-      if (restoredUnpersisted && !normalizeAuthSession(stored).token) return identityFingerprint(state.session);
+      if (restoredUnpersisted && !hasIdentity(stored)) return identityFingerprint(state.session);
       return identityFingerprint(stored);
     } catch { return null; }
   };
@@ -127,7 +134,7 @@ export function createSessionController(initialSession, storage, onSessionChange
       menuAccess: access?.menuAccess ?? {},
       accessLoaded: access !== undefined,
     };
-    restoredUnpersisted = !clear && !persist && !!session.token;
+    restoredUnpersisted = !clear && !persist && hasIdentity(session);
     try {
       if (clear) config.storage?.clear();
       else if (persist) config.storage?.write(session);
