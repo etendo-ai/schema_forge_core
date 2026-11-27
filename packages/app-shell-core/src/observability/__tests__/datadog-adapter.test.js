@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createDatadogAdapter,
+  describeRejectionReason,
   resolveTracingUrls,
   sanitizeDatadogEvent,
   toDatadogFlagKey,
@@ -60,10 +61,10 @@ function setValueAtPath(object, clone, segments, fieldType) {
 }
 
 /** Port of rum-core's shouldSend + limitModification: only modifiable, same-type changes stick. */
-function runBeforeSend(beforeSend, event) {
+function runBeforeSend(beforeSend, event, domainContext) {
   const out = structuredClone(event);
   const clone = structuredClone(event);
-  const result = beforeSend(clone);
+  const result = beforeSend(clone, domainContext);
   for (const [path, fieldType] of Object.entries(MODIFIABLE[event.type] ?? {})) {
     setValueAtPath(out, clone, path.split(/\.|(?=\[\])/), fieldType);
   }
@@ -569,5 +570,83 @@ describe('toDatadogFlagKey', () => {
     assert.equal(toDatadogFlagKey('--x--'), 'x');
     assert.equal(toDatadogFlagKey(''), 'flag');
     assert.equal(toDatadogFlagKey('a'.repeat(150)).length, 100);
+  });
+});
+
+describe('createDatadogAdapter — unhandled rejection reason type', () => {
+  const unhandled = () => ({ type: 'error', error: { message: 'Uncaught 1', handling: 'unhandled' } });
+  async function send(event, domainContext) {
+    const { adapter, sdk } = configured();
+    await adapter.init();
+    return runBeforeSend(sdk.initOptions().beforeSend, event, domainContext).event;
+  }
+
+  it('tags primitives and plain objects without leaking values', async () => {
+    assert.equal((await send(unhandled(), { error: undefined })).context.unhandled_reason_type, 'undefined');
+    assert.equal((await send(unhandled(), { error: 500 })).context.unhandled_reason_type, 'number');
+    const event = await send(unhandled(), { error: { status: 409, code: 'x' } });
+    assert.equal(event.context.unhandled_reason_type, 'object');
+    assert.doesNotMatch(JSON.stringify(event), /409|"x"/);
+  });
+
+  it('adds the Error name only when it is well formed', async () => {
+    const ok = await send(unhandled(), { error: new TypeError('boom') });
+    assert.equal(ok.context.unhandled_reason_type, 'error');
+    assert.equal(ok.context.unhandled_reason_name, 'TypeError');
+    for (const name of ['has space', SECRET_EMAIL, 'A'.repeat(42)]) {
+      const err = new Error('x');
+      err.name = name;
+      const event = await send(unhandled(), { error: err });
+      assert.equal(event.context.unhandled_reason_type, 'error');
+      assert.equal('unhandled_reason_name' in event.context, false);
+    }
+  });
+
+  it('still sends the event and keeps an existing context key next to the tag', async () => {
+    const { adapter, sdk } = configured();
+    await adapter.init();
+    const { beforeSend } = sdk.initOptions();
+    const out = runBeforeSend(beforeSend, { ...unhandled(), context: { route: '/go/x' } }, { error: 404 });
+    assert.equal(out.dropped, false);
+    assert.equal(out.event.context.route, '/go/x');
+    assert.equal(out.event.context.unhandled_reason_type, 'number');
+  });
+
+  it('does not lose the event when the reason cannot be read', async () => {
+    const hostile = { get status() { throw new Error('boom'); } };
+    const revoked = Proxy.revocable({}, {});
+    revoked.revoke();
+    for (const error of [hostile, revoked.proxy]) {
+      const { adapter, sdk } = configured();
+      await adapter.init();
+      const out = runBeforeSend(sdk.initOptions().beforeSend, unhandled(), { error });
+      assert.equal(out.dropped, false);
+      assert.equal(out.event.context.unhandled_reason_type, 'unknown');
+    }
+  });
+
+  it('leaves handled errors, other events and a missing domain context alone', async () => {
+    const handled = await send({ type: 'error', error: { message: 'x', handling: 'handled' } }, { error: 1 });
+    assert.equal('unhandled_reason_type' in (handled.context ?? {}), false);
+    const action = await send({ type: 'action', action: { target: { name: 'a' } } }, { error: 1 });
+    assert.equal('unhandled_reason_type' in (action.context ?? {}), false);
+    const none = await send(unhandled());
+    assert.equal('unhandled_reason_type' in (none.context ?? {}), false);
+  });
+});
+
+describe('describeRejectionReason', () => {
+  it('returns only closed-vocabulary values', () => {
+    assert.deepEqual(describeRejectionReason(null), { type: 'null' });
+    assert.deepEqual(describeRejectionReason('s'), { type: 'string' });
+    assert.deepEqual(describeRejectionReason(true), { type: 'boolean' });
+    assert.deepEqual(describeRejectionReason(Symbol('s')), { type: 'symbol' });
+    assert.deepEqual(describeRejectionReason(1n), { type: 'bigint' });
+    assert.deepEqual(describeRejectionReason(() => {}), { type: 'function' });
+    assert.deepEqual(describeRejectionReason({ status: 200, ok: true }), { type: 'response' });
+    assert.deepEqual(describeRejectionReason(new Event('error')), { type: 'event' });
+    assert.deepEqual(describeRejectionReason({ a: 1 }), { type: 'object' });
+    assert.deepEqual(describeRejectionReason(Object.create(null, { name: { value: 'RangeError' }, [Symbol.toStringTag]: { value: 'Error' } })), { type: 'error', name: 'RangeError' });
+    assert.deepEqual(describeRejectionReason([1]), { type: 'array' });
   });
 });
